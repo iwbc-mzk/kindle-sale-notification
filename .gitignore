@@ -129,8 +129,8 @@ dmypy.json
 .pyre/
 
 # aws lambda
-aws_lambda/scraping/python
-aws_lambda/scraping/*.zip
+aws_lambda/*/python
+aws_lambda/*.zip
 
 # terraform
 terraform/*hcl
