@@ -105,3 +105,21 @@ resource "aws_lambda_function" "price_checker" {
     }
   }
 }
+
+resource "aws_lambda_function" "publish_sns_message" {
+  filename      = data.archive_file.lambda_function_publish_sns_message.output_path
+  function_name = "ksn_publish_sns_message"
+  role          = aws_iam_role.ksn_publish_sns_message.arn
+
+  source_code_hash = data.archive_file.lambda_function_publish_sns_message.output_base64sha256
+  runtime          = local.runtime
+  handler          = "publish_sns_message.lambda_handler"
+  timeout          = 10
+
+  environment {
+    variables = {
+      table_name = aws_dynamodb_table.ksn.name,
+      topic_arn  = aws_sns_topic.kindle_sale_notification.arn
+    }
+  }
+}
