@@ -23,7 +23,7 @@ class AmazonScraper:
         self._robots.read()
 
     def fetch_html(self, item_id: str) -> None:
-        url = parse.urljoin(self._base_url, f"dp/{item_id}")
+        url = self.get_url(item_id)
         if not self._robots.can_fetch(self._user_agent, url):
             raise ConnectionRefusedError(f"This url is not allowed to requests. [{url}]")
         
@@ -60,3 +60,6 @@ class AmazonScraper:
     def get_title(self) -> str:
         title_element = self._soup.find(id="productTitle")
         return title_element.text if title_element else ""
+    
+    def get_url(self, item_id: str) -> str:
+        return parse.urljoin(self._base_url, f"dp/{item_id}")

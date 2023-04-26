@@ -34,6 +34,7 @@ def lambda_handler(event, context):
         "title": scraper.get_title(),
         "price": scraper.get_price(),
         "point": scraper.get_point(),
+        "url": scraper.get_url(id)
     }
 
     need_update = False
