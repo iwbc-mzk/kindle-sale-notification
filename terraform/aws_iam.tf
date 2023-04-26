@@ -43,6 +43,13 @@ data "aws_iam_policy_document" "dynamodb_access_policy_document" {
   }
 }
 
+data "aws_iam_policy_document" "sns_publish_policy_document" {
+  statement {
+    effect  = "Allow"
+    actions = ["sns:Publish"]
+  }
+}
+
 ## policy
 resource "aws_iam_policy" "sqs_access_policy" {
   name   = "sqs_access_policy"
@@ -52,6 +59,11 @@ resource "aws_iam_policy" "sqs_access_policy" {
 resource "aws_iam_policy" "dynamodb_access_policy" {
   name   = "dynamodb_access_policy"
   policy = data.aws_iam_policy_document.dynamodb_access_policy_document.json
+}
+
+resource "aws_iam_policy" "sns_publish_policy" {
+  name   = "sns_publish_policy"
+  policy = data.aws_iam_policy_document.sns_publish_policy_document.json
 }
 
 ## attach policy
@@ -85,6 +97,21 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_price_c
   policy_arn = aws_iam_policy.dynamodb_access_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_publish_sns_message" {
+  role       = aws_iam_role.ksn_publish_sns_message.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_publish_sns_message" {
+  role       = aws_iam_role.ksn_publish_sns_message.name
+  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_publish_sns_message" {
+  role       = aws_iam_role.ksn_publish_sns_message.name
+  policy_arn = aws_iam_policy.sns_publish_policy.arn
+}
+
 ## role
 resource "aws_iam_role" "ksn_fetch_items" {
   name               = "ksn_fetch_items"
@@ -93,5 +120,10 @@ resource "aws_iam_role" "ksn_fetch_items" {
 
 resource "aws_iam_role" "ksn_price_checker" {
   name               = "ksn_price_checker"
+  assume_role_policy = data.aws_iam_policy_document.assume_policy_document.json
+}
+
+resource "aws_iam_role" "ksn_publish_sns_message" {
+  name               = "ksn_publish_sns_message"
   assume_role_policy = data.aws_iam_policy_document.assume_policy_document.json
 }
