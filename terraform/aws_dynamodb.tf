@@ -7,4 +7,15 @@ resource "aws_dynamodb_table" "ksn" {
     name = "id"
     type = "S"
   }
+  attribute {
+    name = "discounted"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "discounted"
+    hash_key        = "discounted"
+    range_key       = "id"
+    projection_type = "ALL"
+  }
 }
