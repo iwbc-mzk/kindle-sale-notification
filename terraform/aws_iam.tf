@@ -39,7 +39,7 @@ data "aws_iam_policy_document" "dynamodb_access_policy_document" {
       "dynamodb:Query",
       "dynamodb:UpdateItem"
     ]
-    resources = [aws_dynamodb_table.ksn_db.arn]
+    resources = [aws_dynamodb_table.ksn.arn]
   }
 }
 
