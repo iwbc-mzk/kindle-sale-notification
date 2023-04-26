@@ -131,6 +131,7 @@ dmypy.json
 # aws lambda
 aws_lambda/*/python
 aws_lambda/*.zip
+aws_lambda/*/layer
 
 # terraform
 terraform/*hcl
