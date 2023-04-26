@@ -32,21 +32,26 @@ data "aws_iam_policy_document" "dynamodb_access_policy_document" {
   statement {
     effect = "Allow"
     actions = [
-      "dynamodb:PutItem",
-      "dynamodb:DeleteItem",
+      # 読み込み
       "dynamodb:GetItem",
       "dynamodb:Scan",
       "dynamodb:Query",
+      # 書き込み
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
       "dynamodb:UpdateItem"
     ]
-    resources = [aws_dynamodb_table.ksn.arn]
+    resources = [
+      aws_dynamodb_table.ksn.arn,
+      "${aws_dynamodb_table.ksn.arn}/index/*"
+    ]
   }
 }
 
 data "aws_iam_policy_document" "sns_publish_policy_document" {
   statement {
-    effect  = "Allow"
-    actions = ["sns:Publish"]
+    effect    = "Allow"
+    actions   = ["sns:Publish"]
     resources = [aws_sns_topic.kindle_sale_notification.arn]
   }
 }
