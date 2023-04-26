@@ -59,7 +59,7 @@ class AmazonScraper:
 
     def get_title(self) -> str:
         title_element = self._soup.find(id="productTitle")
-        return title_element.text if title_element else ""
+        return title_element.text.strip() if title_element else ""
     
     def get_url(self, item_id: str) -> str:
         return parse.urljoin(self._base_url, f"dp/{item_id}")
