@@ -47,6 +47,7 @@ data "aws_iam_policy_document" "sns_publish_policy_document" {
   statement {
     effect  = "Allow"
     actions = ["sns:Publish"]
+    resources = [aws_sns_topic.kindle_sale_notification.arn]
   }
 }
 
