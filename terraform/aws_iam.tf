@@ -1,6 +1,6 @@
 # AWS Lambda
 ## policy document
-data "aws_iam_policy_document" "assume_policy_document" {
+data "aws_iam_policy_document" "lambda_assume_policy_document" {
   statement {
     effect = "Allow"
     principals {
@@ -11,15 +11,25 @@ data "aws_iam_policy_document" "assume_policy_document" {
   }
 }
 
+data "aws_iam_policy_document" "states_assume_policy_document" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["states.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "sqs_access_policy_document" {
   statement {
     effect = "Allow"
     actions = [
       "sqs:DeleteMessage",
-      "sqs:PurgeQueue",
       "sqs:ReceiveMessage",
-      "sqs:DeleteQueue",
       "sqs:SendMessage",
+      "sqs:GetQueueAttributes",
     ]
     resources = [
       aws_sqs_queue.ksn_queue.arn,
@@ -56,6 +66,30 @@ data "aws_iam_policy_document" "sns_publish_policy_document" {
   }
 }
 
+data "aws_iam_policy_document" "x_ray_access_policy_document" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "xray:PutTraceSegments",
+      "xray:PutTelemetryRecords",
+      "xray:GetSamplingRules",
+      "xray:GetSamplingTargets"
+    ]
+    resources = ["*"]
+  }
+}
+
+data "aws_iam_policy_document" "lambda_inveke_scope_access_policy_document" {
+  statement {
+    effect = "Allow"
+    actions = ["lambda:InvokeFunction"]
+    resources = [
+        aws_lambda_function.fetch_items.arn,
+        aws_lambda_function.price_checker.arn
+    ]
+  }
+}
+
 ## policy
 resource "aws_iam_policy" "sqs_access_policy" {
   name   = "sqs_access_policy"
@@ -70,6 +104,16 @@ resource "aws_iam_policy" "dynamodb_access_policy" {
 resource "aws_iam_policy" "sns_publish_policy" {
   name   = "sns_publish_policy"
   policy = data.aws_iam_policy_document.sns_publish_policy_document.json
+}
+
+resource "aws_iam_policy" "x_ray_access_policy" {
+  name   = "x_ray_access_policy"
+  policy = data.aws_iam_policy_document.x_ray_access_policy_document.json
+}
+
+resource "aws_iam_policy" "lambda_inveke_scope_access_policy" {
+  name = "lambda_inveke_scope_access_policy"
+  policy = data.aws_iam_policy_document.lambda_inveke_scope_access_policy_document.json
 }
 
 ## attach policy
@@ -118,18 +162,43 @@ resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_publish_sns
   policy_arn = aws_iam_policy.sns_publish_policy.arn
 }
 
+resource "aws_iam_role_policy_attachment" "attach_xray_access_policy_to_ksn_state_machine" {
+  role = aws_iam_role.ksn_state_machine.name
+  policy_arn = aws_iam_policy.x_ray_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_sqs_access_policy_to_ksn_state_machine" {
+  role       = aws_iam_role.ksn_state_machine.name
+  policy_arn = aws_iam_policy.sqs_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_to_ksn_state_machine" {
+  role       = aws_iam_role.ksn_state_machine.name
+  policy_arn = aws_iam_policy.sns_publish_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_lambda_inveke_scope_access_policy_to_ksn_state_machine" {
+  role = aws_iam_role.ksn_state_machine.name
+  policy_arn = aws_iam_policy.lambda_inveke_scope_access_policy.arn
+}
+
 ## role
 resource "aws_iam_role" "ksn_fetch_items" {
   name               = "ksn_fetch_items"
-  assume_role_policy = data.aws_iam_policy_document.assume_policy_document.json
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
 }
 
 resource "aws_iam_role" "ksn_price_checker" {
   name               = "ksn_price_checker"
-  assume_role_policy = data.aws_iam_policy_document.assume_policy_document.json
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
 }
 
 resource "aws_iam_role" "ksn_publish_sns_message" {
   name               = "ksn_publish_sns_message"
-  assume_role_policy = data.aws_iam_policy_document.assume_policy_document.json
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
+}
+
+resource "aws_iam_role" "ksn_state_machine" {
+  name               = "ksn_state_machine"
+  assume_role_policy = data.aws_iam_policy_document.states_assume_policy_document.json
 }
