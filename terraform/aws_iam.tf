@@ -22,6 +22,17 @@ data "aws_iam_policy_document" "states_assume_policy_document" {
   }
 }
 
+data "aws_iam_policy_document" "scheduler_assume_policy_document" {
+  statement {
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["scheduler.amazonaws.com"]
+    }
+    actions = ["sts:AssumeRole"]
+  }
+}
+
 data "aws_iam_policy_document" "sqs_access_policy_document" {
   statement {
     effect = "Allow"
@@ -81,13 +92,21 @@ data "aws_iam_policy_document" "x_ray_access_policy_document" {
 
 data "aws_iam_policy_document" "lambda_inveke_scope_access_policy_document" {
   statement {
-    effect = "Allow"
+    effect  = "Allow"
     actions = ["lambda:InvokeFunction"]
     resources = [
-        aws_lambda_function.fetch_items.arn,
-        aws_lambda_function.price_checker.arn,
-        aws_lambda_function.publish_sns_message.arn
+      aws_lambda_function.fetch_items.arn,
+      aws_lambda_function.price_checker.arn,
+      aws_lambda_function.publish_sns_message.arn
     ]
+  }
+}
+
+data "aws_iam_policy_document" "invoke_step_functions_policy_document" {
+  statement {
+    effect    = "Allow"
+    actions   = ["states:StartExecution"]
+    resources = [aws_sfn_state_machine.ksn_state_machine.arn]
   }
 }
 
@@ -113,8 +132,13 @@ resource "aws_iam_policy" "x_ray_access_policy" {
 }
 
 resource "aws_iam_policy" "lambda_inveke_scope_access_policy" {
-  name = "lambda_inveke_scope_access_policy"
+  name   = "lambda_inveke_scope_access_policy"
   policy = data.aws_iam_policy_document.lambda_inveke_scope_access_policy_document.json
+}
+
+resource "aws_iam_policy" "invoke_step_functions_policy" {
+  name   = "invoke_step_functions_policy_document"
+  policy = data.aws_iam_policy_document.invoke_step_functions_policy_document.json
 }
 
 ## attach policy
@@ -164,7 +188,7 @@ resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_publish_sns
 }
 
 resource "aws_iam_role_policy_attachment" "attach_xray_access_policy_to_ksn_state_machine" {
-  role = aws_iam_role.ksn_state_machine.name
+  role       = aws_iam_role.ksn_state_machine.name
   policy_arn = aws_iam_policy.x_ray_access_policy.arn
 }
 
@@ -179,8 +203,13 @@ resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_to_ksn_stat
 }
 
 resource "aws_iam_role_policy_attachment" "attach_lambda_inveke_scope_access_policy_to_ksn_state_machine" {
-  role = aws_iam_role.ksn_state_machine.name
+  role       = aws_iam_role.ksn_state_machine.name
   policy_arn = aws_iam_policy.lambda_inveke_scope_access_policy.arn
+}
+
+resource "aws_iam_role_policy_attachment" "attach_invoke_step_functions_policy_to_ksn_scheduler" {
+  role       = aws_iam_role.ksn_scheduler.name
+  policy_arn = aws_iam_policy.invoke_step_functions_policy.arn
 }
 
 ## role
@@ -202,4 +231,9 @@ resource "aws_iam_role" "ksn_publish_sns_message" {
 resource "aws_iam_role" "ksn_state_machine" {
   name               = "ksn_state_machine"
   assume_role_policy = data.aws_iam_policy_document.states_assume_policy_document.json
+}
+
+resource "aws_iam_role" "ksn_scheduler" {
+  name               = "ksn_scheduler"
+  assume_role_policy = data.aws_iam_policy_document.scheduler_assume_policy_document.json
 }
