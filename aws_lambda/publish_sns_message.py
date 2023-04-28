@@ -16,6 +16,7 @@ def lambda_handler(event, context):
     )
     items = res.get("Items", [])
     if not items:
+        print("No discounted item.")
         return
 
     message = ""
