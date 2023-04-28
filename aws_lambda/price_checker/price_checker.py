@@ -28,7 +28,7 @@ def lambda_handler(event, context):
         scraper.fetch_html(id)
     except HTTPError as e:
         print(e)
-        return
+        raise e
 
     values = {
         "title": scraper.get_title(),
@@ -59,6 +59,7 @@ def lambda_handler(event, context):
             dynamodb_table.put_item(Item=updated_item)
     except Exception as e:
         print(e)
+        raise e
     else:
         queue.delete_messages(Entries=[
             {
@@ -66,3 +67,8 @@ def lambda_handler(event, context):
                 "ReceiptHandle": message.receipt_handle
             }
         ])
+
+    return {
+        **event,
+        "ApproximateNumberOfMessages": event["ApproximateNumberOfMessages"] - 1
+    }

@@ -1,3 +1,8 @@
+locals {
+    interval_sec = 5
+    wait_all_process_finished_sec = aws_sqs_queue.ksn_queue.visibility_timeout_seconds
+}
+
 resource "aws_sfn_state_machine" "ksn_state_machine" {
   name     = "ksn_state_machine"
   role_arn = aws_iam_role.ksn_state_machine.arn
@@ -23,9 +28,9 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
                         "BackoffRate": 2
                     }
                 ],
-                "Next": "GetQueueAttributes"
+                "Next": "Get Number Of Messages"
             },
-            "GetQueueAttributes": {
+            "Get Number Of Messages": {
                 "Type": "Task",
                 "Parameters": {
                     "QueueUrl": "${aws_sqs_queue.ksn_queue.url}",
@@ -35,32 +40,56 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
                     ]
                 },
                 "Resource": "arn:aws:states:::aws-sdk:sqs:getQueueAttributes",
-                "Next": "Choice"
+                "Next": "Check Number Of Messages"
+                "ResultSelector": {
+                    "ApproximateNumberOfMessages.$": "States.StringToJson($.Attributes.ApproximateNumberOfMessages)",
+                    "ApproximateNumberOfMessagesNotVisible.$": "States.StringToJson($.Attributes.ApproximateNumberOfMessagesNotVisible)"
+                }
             },
-            "Choice": {
+            "Check Number Of Messages": {
+               "Type": "Choice",
+                "Choices": [
+                    {
+                    "Variable": "$.ApproximateNumberOfMessages",
+                    "NumericGreaterThan": 0,
+                    "Next": "price check"
+                    }
+                ],
+                "Default": "Wait All Queue Process Finish"
+            },
+            "Wait All Queue Process Finish": {
+                "Type": "Wait",
+                "Seconds": "${local.wait_all_process_finished_sec}",
+                "Next": "Get Number Of Messages Not Visible"
+            },
+            "Get Number Of Messages Not Visible": {
+                "Type": "Task",
+                "Parameters": {
+                    "QueueUrl": "${aws_sqs_queue.ksn_queue.url}",
+                    "AttributeNames": [
+                        "ApproximateNumberOfMessages",
+                        "ApproximateNumberOfMessagesNotVisible"
+                    ]
+                },
+                "Resource": "arn:aws:states:::aws-sdk:sqs:getQueueAttributes",
+                "Next": "Check Number Of Messages Not Visible",
+                "ResultSelector": {
+                    "ApproximateNumberOfMessages.$": "States.StringToJson($.Attributes.ApproximateNumberOfMessages)",
+                    "ApproximateNumberOfMessagesNotVisible.$": "States.StringToJson($.Attributes.ApproximateNumberOfMessagesNotVisible)"
+                }
+            },
+            "Check Number Of Messages Not Visible": {
                 "Type": "Choice",
                 "Choices": [
                     {
-                        "Not": {
-                            "Variable": "$.Attributes.ApproximateNumberOfMessages",
-                            "StringEquals": "0"
-                        },
-                        "Next": "price check"
+                        "Variable": "$.ApproximateNumberOfMessages",
+                        "NumericGreaterThan": 0,
+                        "Next": "Check Number Of Messages"
                     },
                     {
-                        "And": [
-                            {
-                                "Variable": "$.Attributes.ApproximateNumberOfMessages",
-                                "StringEquals": "0"
-                            },
-                            {
-                                "Not": {
-                                    "Variable": "$.Attributes.ApproximateNumberOfMessagesNotVisible",
-                                    "StringEquals": "0"
-                                }
-                            }
-                        ],
-                        "Next": "Wait"
+                        "Variable": "$.ApproximateNumberOfMessagesNotVisible",
+                        "NumericGreaterThan": 0,
+                        "Next": "Wait All Queue Process Finish"
                     }
                 ],
                 "Default": "publish sns message"
@@ -81,12 +110,12 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
                         "BackoffRate": 2
                     }
                 ],
-                "Next": "Wait"
+                "Next": "Wait Interval"
             },
-            "Wait": {
+            "Wait Interval": {
                 "Type": "Wait",
-                "Seconds": 5,
-                "Next": "GetQueueAttributes"
+                "Seconds": "${local.interval_sec}",
+                "Next": "Check Number Of Messages"
             },
             "publish sns message": {
                 "Type": "Task",

@@ -85,7 +85,8 @@ data "aws_iam_policy_document" "lambda_inveke_scope_access_policy_document" {
     actions = ["lambda:InvokeFunction"]
     resources = [
         aws_lambda_function.fetch_items.arn,
-        aws_lambda_function.price_checker.arn
+        aws_lambda_function.price_checker.arn,
+        aws_lambda_function.publish_sns_message.arn
     ]
   }
 }
