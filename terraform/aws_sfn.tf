@@ -1,6 +1,6 @@
 locals {
-    interval_sec = 5
-    wait_all_process_finished_sec = aws_sqs_queue.ksn_queue.visibility_timeout_seconds
+  interval_sec                  = 5
+  wait_all_process_finished_sec = aws_sqs_queue.ksn_queue.visibility_timeout_seconds
 }
 
 resource "aws_sfn_state_machine" "ksn_state_machine" {
@@ -40,7 +40,7 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
                     ]
                 },
                 "Resource": "arn:aws:states:::aws-sdk:sqs:getQueueAttributes",
-                "Next": "Check Number Of Messages"
+                "Next": "Check Number Of Messages",
                 "ResultSelector": {
                     "ApproximateNumberOfMessages.$": "States.StringToJson($.Attributes.ApproximateNumberOfMessages)",
                     "ApproximateNumberOfMessagesNotVisible.$": "States.StringToJson($.Attributes.ApproximateNumberOfMessagesNotVisible)"
@@ -59,7 +59,7 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
             },
             "Wait All Queue Process Finish": {
                 "Type": "Wait",
-                "Seconds": "${local.wait_all_process_finished_sec}",
+                "Seconds": ${local.wait_all_process_finished_sec},
                 "Next": "Get Number Of Messages Not Visible"
             },
             "Get Number Of Messages Not Visible": {
@@ -114,7 +114,7 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
             },
             "Wait Interval": {
                 "Type": "Wait",
-                "Seconds": "${local.interval_sec}",
+                "Seconds": ${local.interval_sec},
                 "Next": "Check Number Of Messages"
             },
             "publish sns message": {
@@ -137,5 +137,5 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
             }
         }
     }
-  EOF
+    EOF
 }
