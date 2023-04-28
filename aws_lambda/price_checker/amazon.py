@@ -28,9 +28,8 @@ class AmazonScraper:
 
     def fetch_html(self, item_id: str) -> None:
         url = self.get_url(item_id)
-        max_retry = 3
-        for retry in range(max_retry):
-            user_agent = self._user_agents[retry]
+        max_retry = len(self._user_agents)
+        for i, user_agent in enumerate(self._user_agents, 1):
             if not self._robots.can_fetch(user_agent, url):
                 raise ConnectionRefusedError(f"This url is not allowed to requests. [{url}]")
             
@@ -44,8 +43,8 @@ class AmazonScraper:
                 self._soup = BeautifulSoup(res.content, "html.parser")
                 break
             else:
-                if retry < max_retry:
-                    print(f"failed to requet: user_agent={user_agent} url={url}")
+                print(f"failed to requet: user_agent={user_agent} url={url}")
+                if i < max_retry:
                     continue
                 res.raise_for_status()
 
