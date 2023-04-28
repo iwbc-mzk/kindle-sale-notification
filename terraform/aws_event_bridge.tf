@@ -6,7 +6,8 @@ resource "aws_scheduler_schedule" "ksn_scheduler" {
     mode = "OFF"
   }
 
-  schedule_expression = "cron(0 19 * * ? *)"
+  schedule_expression_timezone = "Asia/Tokyo"
+  schedule_expression          = "cron(0 19 * * ? *)" # 日本時間で設定
 
   target {
     arn      = aws_sfn_state_machine.ksn_state_machine.arn
