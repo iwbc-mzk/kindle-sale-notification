@@ -5,6 +5,7 @@ from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.remote.webelement import WebElement
 
 class AmazonScraper:
     def __init__(self) -> None:
@@ -14,7 +15,7 @@ class AmazonScraper:
         self._prepare_webdriver()
         self._prepare_robots()
 
-    def _prepare_robots(self):
+    def _prepare_robots(self) -> None:
         self._robots = robotparser.RobotFileParser()
         robots_url = parse.urljoin(self._base_url, "robots.txt")
         self._robots.set_url(robots_url)
@@ -32,8 +33,8 @@ class AmazonScraper:
 
         self._webdriver = webdriver.Chrome(service=service, options=options)
 
-        # クッキー保存用
-        self._webdriver.get("https://www.amazon.co.jp/gp/help/customer/display.html?nodeId=GQ6B6RH72AX8D2TD&ref_=hp_ss_qs_v3_rt_prices")
+        self._webdriver.execute_script('const newProto = navigator.__proto__;delete newProto.webdriver;navigator.__proto__ = newProto;')
+        assert self._webdriver.execute_script('return navigator.webdriver') is None
 
     def fetch(self, url: str) -> None:
         if not self._robots.can_fetch(self._user_agent, url):
@@ -41,10 +42,17 @@ class AmazonScraper:
 
         self._webdriver.get(url)
         return
+    
+    def _get_price_point_element(self):
+        swatch_selector = "#tmmSwatches > ul > li.swatchElement.selected"
+        kindle_swatch_element = self._webdriver.find_elements(by=By.CSS_SELECTOR, value=swatch_selector)[0]
+
+        price_element, point_element, *_ = kindle_swatch_element.find_elements(by=By.CLASS_NAME, value="a-color-price")
+
+        return price_element, point_element
 
     def get_price(self) -> int:
-        price_selector = "#a-autoid-1-announce > span.a-color-base > span.a-size-base.a-color-price.a-color-price"
-        price_element = self._webdriver.find_element(by=By.CSS_SELECTOR, value=price_selector)
+        price_element, _ = self._get_price_point_element()
         text = price_element.text
 
         yen_unit = "￥"
@@ -54,14 +62,13 @@ class AmazonScraper:
         return price if price else -1
 
     def get_point(self) -> int:
-        point_selector = "#a-autoid-1-announce > span.a-color-base > span.a-color-price.a-text-normal"
-        point_element = self._webdriver.find_element(by=By.CSS_SELECTOR, value=point_selector)
+        _, point_element = self._get_price_point_element()
         text = point_element.text
 
         pt_unit = "pt"
         re_pt = f"[0-9,]*{pt_unit}"
         pt = int(re.search(re_pt, text)[0].replace(pt_unit, "").replace(",", ""))
-        
+
         return pt if pt else -1
 
     def get_title(self) -> str:
