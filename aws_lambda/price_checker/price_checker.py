@@ -8,8 +8,12 @@ import boto3
 
 
 def lambda_handler(event, context):
+    response = {**event}
+
+    queue_url = os.environ["queue_url"]
+
     sqs = boto3.resource("sqs")
-    queue = sqs.Queue(os.environ["queue_url"])
+    queue = sqs.Queue(queue_url)
 
     messages = queue.receive_messages(MaxNumberOfMessages=1)
     if not messages:
@@ -21,21 +25,23 @@ def lambda_handler(event, context):
     id = item.get("id")
     if not id:
         print("No item id.")
-        return
+        return response
 
-    scraper = AmazonScraper()
-    try:
-        scraper.fetch_html(id)
-    except HTTPError as e:
-        print(e)
-        raise e
-
-    values = {
-        "title": scraper.get_title(),
-        "price": scraper.get_price(),
-        "point": scraper.get_point(),
-        "url": scraper.get_url(id)
-    }
+    sc = AmazonScraper()
+    url = sc.get_url(id)
+    values = {**item}
+    for _ in range(2):
+        try:
+            sc.fetch(url)
+            values["title"] = sc.get_title()
+            values["price"] = sc.get_price()
+            values["point"] = sc.get_point()
+            values["url"] = url
+        except Exception as e:
+            print(e)
+            continue
+        else:
+            break
 
     need_update = False
     updated_item = item.copy()
@@ -57,6 +63,7 @@ def lambda_handler(event, context):
             dynamodb = boto3.resource("dynamodb")
             dynamodb_table = dynamodb.Table(os.environ["table_name"])
             dynamodb_table.put_item(Item=updated_item)
+            print(f"update item: {updated_item}")
     except Exception as e:
         print(e)
         raise e
@@ -68,7 +75,5 @@ def lambda_handler(event, context):
             }
         ])
 
-    return {
-        **event,
-        "ApproximateNumberOfMessages": event["ApproximateNumberOfMessages"] - 1
-    }
+    response["ApproximateNumberOfMessages"] -= 1
+    return response
