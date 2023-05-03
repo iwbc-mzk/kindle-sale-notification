@@ -10,6 +10,32 @@ resource "aws_ecr_repository" "price_checker" {
 }
 
 # ---------------------------------------------------------
+# ECR Life Cycle Policy
+#----------------------------------------------------------
+resource "aws_ecr_lifecycle_policy" "price_checker_lifecycle_policy" {
+  repository = aws_ecr_repository.price_checker.name
+
+  policy = <<EOF
+{
+  "rules": [
+    {
+      "rulePriority": 1,
+      "description": "delete all but the latest image",
+      "selection": {
+        "tagStatus": "any",
+        "countType": "imageCountMoreThan",
+        "countNumber": 1
+      },
+      "action": {
+        "type": "expire"
+      }
+    }
+  ]
+}
+  EOF
+}
+
+# ---------------------------------------------------------
 # external
 #----------------------------------------------------------
 data "external" "build_push_price_check" {
