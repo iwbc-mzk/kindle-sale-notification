@@ -1,5 +1,6 @@
-# AWS Lambda
-## policy document
+# ------------------------------------------------------------------------
+# IAM Policy Document
+# ------------------------------------------------------------------------
 data "aws_iam_policy_document" "lambda_assume_policy_document" {
   statement {
     effect = "Allow"
@@ -110,7 +111,9 @@ data "aws_iam_policy_document" "invoke_step_functions_policy_document" {
   }
 }
 
-## policy
+# ------------------------------------------------------------------------
+# IAM Policy
+# ------------------------------------------------------------------------
 resource "aws_iam_policy" "sqs_access_policy" {
   name   = "sqs_access_policy"
   policy = data.aws_iam_policy_document.sqs_access_policy_document.json
@@ -140,7 +143,6 @@ resource "aws_iam_policy" "invoke_step_functions_policy" {
   name   = "invoke_step_functions_policy_document"
   policy = data.aws_iam_policy_document.invoke_step_functions_policy_document.json
 }
-
 
 # ------------------------------------------------------------------------
 # Attach Policy
@@ -231,7 +233,9 @@ resource "aws_iam_role_policy_attachment" "attach_invoke_step_functions_policy_t
   policy_arn = aws_iam_policy.invoke_step_functions_policy.arn
 }
 
-## role
+# ------------------------------------------------------------------------
+# IAM Role
+# ------------------------------------------------------------------------
 resource "aws_iam_role" "ksn_fetch_items" {
   name               = "ksn_fetch_items"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json

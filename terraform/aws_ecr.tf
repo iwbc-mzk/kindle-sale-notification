@@ -39,12 +39,12 @@ resource "aws_ecr_lifecycle_policy" "price_checker_lifecycle_policy" {
 # external
 #----------------------------------------------------------
 data "external" "build_push_price_check" {
-  program     = ["python3", "${path.module}/../aws_lambda/price_checker/buildpush.py"]
-  working_dir = "${path.module}/../aws_lambda"
+  program     = ["python3", "${local.lambda_dir}/price_checker/buildpush.py"]
+  working_dir = local.lambda_dir
   query = {
     AWS_REGION     = var.aws_region
     AWS_ACCOUNT_ID = var.aws_account_id
     REPO_URL       = aws_ecr_repository.price_checker.repository_url
-    CONTAINER_NAME = "price_checker"
+    CONTAINER_NAME = aws_ecr_repository.price_checker.name
   }
 }

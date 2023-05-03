@@ -7,9 +7,6 @@ import shutil
 from distutils.dir_util import copy_tree
 
 
-LAMBDA_DIR = "../aws_lambda"
-
-
 def main():
     input_data = json.load(sys.stdin)
 
