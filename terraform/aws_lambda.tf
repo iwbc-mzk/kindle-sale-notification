@@ -23,6 +23,13 @@ data "archive_file" "archive_publish_sns_message" {
   output_file_mode = "0666"
 }
 
+data "archive_file" "archive_register_item" {
+  type             = "zip"
+  source_file      = "${local.lambda_dir}/register_item.py"
+  output_path      = "${local.lambda_dir}/register_item.zip"
+  output_file_mode = "0666"
+}
+
 # ------------------------------------------------------------------------------------------------------
 # Lambda Functions
 # ------------------------------------------------------------------------------------------------------
@@ -75,6 +82,23 @@ resource "aws_lambda_function" "publish_sns_message" {
     variables = {
       table_name = aws_dynamodb_table.ksn.name,
       topic_arn  = aws_sns_topic.kindle_sale_notification.arn
+    }
+  }
+}
+
+resource "aws_lambda_function" "register_item" {
+  filename      = data.archive_file.archive_register_item.output_path
+  function_name = "ksn_register_item"
+  role          = aws_iam_role.ksn_register_item.arn
+
+  source_code_hash = data.archive_file.archive_register_item.output_base64sha256
+  runtime          = local.runtime
+  handler          = "register_item.lambda_handler"
+  timeout          = 10
+
+  environment {
+    variables = {
+      table_name = aws_dynamodb_table.ksn.name
     }
   }
 }

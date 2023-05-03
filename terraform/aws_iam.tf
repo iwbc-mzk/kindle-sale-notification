@@ -141,7 +141,11 @@ resource "aws_iam_policy" "invoke_step_functions_policy" {
   policy = data.aws_iam_policy_document.invoke_step_functions_policy_document.json
 }
 
-## attach policy
+
+# ------------------------------------------------------------------------
+# Attach Policy
+# ------------------------------------------------------------------------
+# Fetch Items
 resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_fetch_items" {
   role       = aws_iam_role.ksn_fetch_items.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -157,6 +161,7 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_fetch_i
   policy_arn = aws_iam_policy.dynamodb_access_policy.arn
 }
 
+# Price Checker
 resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_price_checker" {
   role       = aws_iam_role.ksn_price_checker.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -172,6 +177,7 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_price_c
   policy_arn = aws_iam_policy.dynamodb_access_policy.arn
 }
 
+# Publish SNS Message
 resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_publish_sns_message" {
   role       = aws_iam_role.ksn_publish_sns_message.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
@@ -187,6 +193,18 @@ resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_publish_sns
   policy_arn = aws_iam_policy.sns_publish_policy.arn
 }
 
+# Rregister Item
+resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_register_item" {
+  role       = aws_iam_role.ksn_register_item.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_register_item" {
+  role       = aws_iam_role.ksn_register_item.name
+  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
+}
+
+# Step Functions
 resource "aws_iam_role_policy_attachment" "attach_xray_access_policy_to_ksn_state_machine" {
   role       = aws_iam_role.ksn_state_machine.name
   policy_arn = aws_iam_policy.x_ray_access_policy.arn
@@ -207,6 +225,7 @@ resource "aws_iam_role_policy_attachment" "attach_lambda_inveke_scope_access_pol
   policy_arn = aws_iam_policy.lambda_inveke_scope_access_policy.arn
 }
 
+# Event Bridge
 resource "aws_iam_role_policy_attachment" "attach_invoke_step_functions_policy_to_ksn_scheduler" {
   role       = aws_iam_role.ksn_scheduler.name
   policy_arn = aws_iam_policy.invoke_step_functions_policy.arn
@@ -236,4 +255,9 @@ resource "aws_iam_role" "ksn_state_machine" {
 resource "aws_iam_role" "ksn_scheduler" {
   name               = "ksn_scheduler"
   assume_role_policy = data.aws_iam_policy_document.scheduler_assume_policy_document.json
+}
+
+resource "aws_iam_role" "ksn_register_item" {
+  name               = "ksn_register_item"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
 }
