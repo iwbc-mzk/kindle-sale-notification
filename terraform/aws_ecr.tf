@@ -39,7 +39,8 @@ resource "aws_ecr_lifecycle_policy" "price_checker_lifecycle_policy" {
 # external
 #----------------------------------------------------------
 data "external" "build_push_price_check" {
-  program = ["sh", "../aws_lambda/price_checker/buildpush.sh"]
+  program     = ["python3", "${path.module}/../aws_lambda/price_checker/buildpush.py"]
+  working_dir = "${path.module}/../aws_lambda"
   query = {
     AWS_REGION     = "ap-northeast-1"
     AWS_ACCOUNT_ID = var.aws_account_id
