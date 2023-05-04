@@ -129,10 +129,10 @@ dmypy.json
 .pyre/
 
 # aws lambda
-aws_lambda/*/python
 aws_lambda/*.zip
-aws_lambda/*/layer
+aws_lambda/*.exe
 
 # terraform
 terraform/*hcl
 terraform/.terraform
+terraform/*.tfstate*
