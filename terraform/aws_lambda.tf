@@ -54,9 +54,10 @@ resource "aws_lambda_function" "fetch_items" {
 resource "aws_lambda_function" "price_checker" {
   function_name = "ksn_price_checker"
   role          = aws_iam_role.ksn_price_checker.arn
-  image_uri     = data.external.build_push_price_check.result.image_uri
+  image_uri     = "${aws_ecr_repository.price_checker.repository_url}:latest"
   package_type  = "Image"
 
+  source_code_hash = base64sha256("${join("", [for f in fileset(".", "${local.lambda_dir}/price_checker/*") : filesha1(f)])}${join("", [for f in fileset(".", "${local.lambda_dir}/image_base/*") : filesha1(f)])}")
   memory_size = 1024
   timeout     = 60
 
@@ -66,6 +67,11 @@ resource "aws_lambda_function" "price_checker" {
       table_name : aws_dynamodb_table.ksn.name,
     }
   }
+
+  depends_on = [
+    aws_ecr_repository.price_checker,
+    null_resource.build_push,
+  ]
 }
 
 resource "aws_lambda_function" "publish_sns_message" {
