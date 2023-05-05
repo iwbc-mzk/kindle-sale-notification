@@ -58,8 +58,8 @@ resource "aws_lambda_function" "price_checker" {
   package_type  = "Image"
 
   source_code_hash = base64sha256("${join("", [for f in fileset(".", "${local.lambda_dir}/price_checker/*") : filesha1(f)])}${join("", [for f in fileset(".", "${local.lambda_dir}/image_base/*") : filesha1(f)])}")
-  memory_size = 1024
-  timeout     = 60
+  memory_size      = 1024
+  timeout          = 60
 
   environment {
     variables = {
@@ -106,5 +106,19 @@ resource "aws_lambda_function" "register_item" {
     variables = {
       table_name = aws_dynamodb_table.ksn.name
     }
+  }
+}
+
+# ------------------------------------------------------------------------------------------------------
+# Lambda Function URL
+# ------------------------------------------------------------------------------------------------------
+resource "aws_lambda_function_url" "register_item" {
+  function_name      = aws_lambda_function.register_item.function_name
+  authorization_type = "AWS_IAM"
+
+  cors {
+    allow_credentials = false
+    allow_origins     = ["*"]
+    allow_methods     = ["POST"]
   }
 }
