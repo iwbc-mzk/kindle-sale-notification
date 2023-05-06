@@ -1,6 +1,6 @@
-function App() {
+function Popup() {
   return (
-    <div>
+    <div style={{width: "300px"}}>
         <header>
             <h5>Hello From React App</h5>
         </header>
@@ -8,4 +8,4 @@ function App() {
   );
 }
 
-export default App;
+export default Popup;
