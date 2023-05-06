@@ -136,3 +136,12 @@ aws_lambda/*.exe
 terraform/*hcl
 terraform/.terraform
 terraform/*.tfstate*
+
+# ----------------------------
+# google extension
+#-----------------------------
+# dependencies
+chrome_extension/node_modules
+
+# production
+chrome_extension/build
