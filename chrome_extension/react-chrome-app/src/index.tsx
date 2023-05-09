@@ -1,30 +1,19 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
 import App from './App';
 
+
 const rootElement = document.createElement("div");
-rootElement.id = "react-chrome-app";
+rootElement.id = "register-button";
 
-const globalStyles = document.createElement("style");
-globalStyles.innerHTML = `
-    #${rootElement.id} {
-        position: fixed;
-        left: 0;
-        top: 0;
-        width: 300px;
-        height: 100vh;
-        background: #ffffff;
-        border-right: 1px solid #c2c2c2;
-        z-index: 9999;
-    }
-`;
+const ele = document.getElementById("wishlistButtonStack");
+ele?.appendChild(rootElement)
 
-document.body.appendChild(globalStyles);
-document.body.appendChild(rootElement);
 
 const root = ReactDOM.createRoot(rootElement);
 root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>
 );
