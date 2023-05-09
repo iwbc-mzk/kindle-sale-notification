@@ -65,19 +65,25 @@ const getProductPoint = () => {
 }
 
 const getUrl = () => {
-    const { protocol, hostname, search } = window.location;
-
-    const searchParams = new URLSearchParams(search);
-    const id = searchParams.get("pd_rd_i");
+    const { protocol, hostname } = window.location;
+    const id = getId();
 
     return `${protocol}//${hostname}/dp/${id}`;
 }
 
 const getId = () => {
-    const { search } = window.location;
+    const { pathname } = window.location;
 
-    const searchParams = new URLSearchParams(search);
-    return searchParams.get("pd_rd_i") || "";
+    const dpReg = new RegExp("/dp/[A-Z0-9]*/");
+    const dpMatch = pathname.match(dpReg);
+    if (dpMatch) {
+        return dpMatch[0]?.replace("/dp/", "").replace("/", "");
+    } else {
+        const gp_re = new RegExp("/gp/product/[A-Z0-9]*$");
+        const gp_match = pathname.match(gp_re);
+
+        return gp_match ? gp_match[0].replace("/gp/product/", "").replace("/", "") : "";
+    }
 }
 
 const messageFromPopup = (msg: MessageType, sender: chrome.runtime.MessageSender, sendResponse: (response: ProductInfoResponse) => void) => {
