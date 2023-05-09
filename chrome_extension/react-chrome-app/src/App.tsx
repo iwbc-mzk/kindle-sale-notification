@@ -31,7 +31,7 @@ const getProductPoint = () => {
     const pointElement = xPathResult.snapshotItem(0);
     const raw_txt = pointElement?.firstChild?.nodeValue || "";
 
-    const re = new RegExp(`[0-9]${pt}`);
+    const re = new RegExp(`[0-9]*${pt}`);
     const point_txt_match = raw_txt.match(re);
     const point_txt = point_txt_match ? point_txt_match[0].replace(pt, "") : "0";
     const point: number = Number(point_txt);
