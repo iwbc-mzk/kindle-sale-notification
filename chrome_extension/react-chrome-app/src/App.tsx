@@ -4,6 +4,15 @@ import { MessageType, ProductInfoResponse, ProductInfo } from "./types";
 import { MESSAGE_TYPES } from "./const";
 
 
+const isKindleUnlimited = () => {
+    const xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/i";
+
+    const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    const unlimitedElement = xpathResult.snapshotItem(0);
+    return unlimitedElement !== null
+}
+
+
 const getProductTitle = () => {
     const titleElement = document.getElementById("productTitle");
     const title = titleElement ? titleElement.textContent ? titleElement.textContent : "" : "";
@@ -13,28 +22,44 @@ const getProductTitle = () => {
 
 const getProductPrice = () => {
     const yen = "￥";
-    const xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/span[1]";
+
+    var xpath: string;
+    if (isKindleUnlimited()) {
+        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[4]/span[1]/a";
+    } else {
+        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/span[1]";
+    }
 
     const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     const priceElement = xPathResult.snapshotItem(0);
-    const price_txt = priceElement?.firstChild?.nodeValue;
-    const price: number = price_txt ? Number(price_txt.replace(yen, "")) : 0;
+    const text = priceElement?.firstChild?.nodeValue || "";
+
+    const re = new RegExp(`${yen}[0-9]*`);
+    const priceMatch = text.match(re);
+    const priceText = priceMatch ? priceMatch[0].replace(yen, "") : "0";
+    const price: number = Number(priceText);
 
     return price;
 }
 
 const getProductPoint = () => {
     const pt = "pt";
-    const xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]";
+
+    var xpath: string;
+    if (isKindleUnlimited()) {
+        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[4]/span[2]";
+    } else {
+        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]";
+    }
     
     const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     const pointElement = xPathResult.snapshotItem(0);
-    const raw_txt = pointElement?.firstChild?.nodeValue || "";
+    const rawText = pointElement?.firstChild?.nodeValue || "";
 
     const re = new RegExp(`[0-9]*${pt}`);
-    const point_txt_match = raw_txt.match(re);
-    const point_txt = point_txt_match ? point_txt_match[0].replace(pt, "") : "0";
-    const point: number = Number(point_txt);
+    const pointMatch = rawText.match(re) || "";
+    const pointText = pointMatch ? pointMatch[0].replace(pt, "") : "0";
+    const point: number = Number(pointText);
 
     return point;
 }
