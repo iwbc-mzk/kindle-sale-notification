@@ -45,6 +45,8 @@
     ]
   },
   "devDependencies": {
+    "@types/chrome": "0.0.235",
+    "dotenv": "^16.0.3",
     "ts-loader": "^9.4.2",
     "webpack": "^5.82.0",
     "webpack-cli": "^5.0.2"
