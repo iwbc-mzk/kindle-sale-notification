@@ -25,18 +25,18 @@ const getProductPrice = () => {
 
     var xpath: string;
     if (isKindleUnlimited()) {
-        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[4]/span[1]/a";
+        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[4]/span[1]/a";
     } else {
-        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/span[1]";
+        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span/span[1]/span/a/span[2]/span[1]";
     }
 
     const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     const priceElement = xPathResult.snapshotItem(0);
     const text = priceElement?.firstChild?.nodeValue || "";
 
-    const re = new RegExp(`${yen}[0-9]*`);
-    const priceMatch = text.match(re);
-    const priceText = priceMatch ? priceMatch[0].replace(yen, "") : "0";
+    const re = new RegExp(`^${yen}([0-9]+,{0,1})+`);
+    const priceMatch = text.trim().match(re);
+    const priceText = priceMatch ? priceMatch[0].replace(yen, "").replaceAll(",", "") : "0";
     const price: number = Number(priceText);
 
     return price;
@@ -47,9 +47,9 @@ const getProductPoint = () => {
 
     var xpath: string;
     if (isKindleUnlimited()) {
-        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[4]/span[2]";
+        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[4]/span[2]";
     } else {
-        xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]";
+        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]";
     }
     
     const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
