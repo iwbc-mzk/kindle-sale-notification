@@ -2,6 +2,7 @@ from datetime import datetime
 import os
 import base64
 import urllib
+import json
 
 import boto3
 
@@ -20,10 +21,11 @@ def lambda_handler(event, context):
     is_base64_encoded = event.get("isBase64Encoded", False)
     if is_base64_encoded:
         body_str = base64.b64decode(event.get("body", "")).decode("utf-8")
+        parse_qs = urllib.parse.parse_qs(body_str)
+        body = {key: val[0] for key, val in parse_qs.items()}
     else:
-        body_str - event.get("body", "")
-    parse_qs = urllib.parse.parse_qs(body_str)
-    body = {key: val[0] for key, val in parse_qs.items()}
+        body = json.loads(event.get("body", ""))
+    
 
     print(body)
 
