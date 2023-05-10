@@ -5,7 +5,7 @@ import { MESSAGE_TYPES } from "./const";
 
 
 const isKindleUnlimited = () => {
-    const xpath = "/html/body/div[2]/div[2]/div[3]/div[1]/div[10]/div[4]/div[2]/div[2]/ul/li[1]/span/span[1]/span/a/span[2]/i";
+    const xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[1]/span/a/span[2]/i";
 
     const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     const unlimitedElement = xpathResult.snapshotItem(0);
