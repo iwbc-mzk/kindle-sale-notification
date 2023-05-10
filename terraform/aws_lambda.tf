@@ -118,7 +118,7 @@ resource "aws_lambda_function_url" "register_item" {
 
   cors {
     allow_credentials = false
-    allow_origins     = ["*"]
+    allow_origins     = ["https://www.amazon.co.jp"]
     allow_methods     = ["POST"]
   }
 }
