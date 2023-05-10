@@ -74,12 +74,12 @@ const getUrl = () => {
 const getId = () => {
     const { pathname } = window.location;
 
-    const dpReg = new RegExp("/dp/[A-Z0-9]*/");
+    const dpReg = new RegExp("/dp/[A-Z0-9]{10}");
     const dpMatch = pathname.match(dpReg);
     if (dpMatch) {
         return dpMatch[0]?.replace("/dp/", "").replace("/", "");
     } else {
-        const gp_re = new RegExp("/gp/product/[A-Z0-9]*$");
+        const gp_re = new RegExp("/gp/product/[A-Z0-9]{10}");
         const gp_match = pathname.match(gp_re);
 
         return gp_match ? gp_match[0].replace("/gp/product/", "").replace("/", "") : "";
