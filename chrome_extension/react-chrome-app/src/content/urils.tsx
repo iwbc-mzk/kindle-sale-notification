@@ -1,3 +1,6 @@
+import aws from "aws-sdk";
+import { EnvVariables } from "../types";
+
 export const isKindleUnlimited = () => {
     const xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[1]/span/a/span[2]/i";
 
@@ -78,4 +81,31 @@ export const getProductId = () => {
 
         return gp_match ? gp_match[0].replace("/gp/product/", "").replace("/", "") : "";
     }
+}
+
+export const getEnvVariables = () => {
+    const { 
+        AWS_REGIN: awsRegion,
+        AWS_ACCESS_KEY_ID: awsAccessKeyId,
+        AWS_SECRET_ACCESS_KEY: awsSecretAccessKey,
+        AWS_LAMBDA_FUNCTIONS_URL: awsLambdaFunctionUrl,
+    } = process.env;
+
+    const env: EnvVariables = {
+        awsRegion: awsRegion || "",
+        awsAccessKeyId: awsAccessKeyId || "",
+        awsSecretAccessKey: awsSecretAccessKey || "",
+        awsLambdaFunctionUrl: awsLambdaFunctionUrl || ""
+    };
+
+    return env;
+}
+
+export const createAwsCredentials = (awsAccessKeyId: string, awsSecretAccessKey: string) => {
+    return new aws.Credentials(awsAccessKeyId, awsSecretAccessKey);
+};
+
+export const createAwsCredentialsFromEnv = () => {
+    const env = getEnvVariables();
+    return createAwsCredentials(env.awsAccessKeyId, env.awsSecretAccessKey);
 }

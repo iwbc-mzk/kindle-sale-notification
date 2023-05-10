@@ -13,3 +13,10 @@ export type ProductInfo = {
     point: number,
     url: string,
 };
+
+export type EnvVariables = {
+    awsRegion: string,
+    awsAccessKeyId: string,
+    awsSecretAccessKey: string,
+    awsLambdaFunctionUrl: string,
+};
