@@ -6,8 +6,8 @@ const env = dotenv.config().parsed;
 
 module.exports = {
     entry: {
-        content: "./src/index.tsx",
-        popup: "./src/popup_index.tsx",
+        content: "./src/content/index.tsx",
+        popup: "./src/popup/index.tsx",
     },
     mode: "production",
     module: {

@@ -1,8 +1,8 @@
 import { TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import { MessageType, ProductInfoResponse } from "./types";
-import { MESSAGE_TYPES } from "./const";
+import { MessageType, ProductInfoResponse } from "../types";
+import { MESSAGE_TYPES } from "../const";
 
 
 const Popup = () => {
@@ -21,11 +21,12 @@ const Popup = () => {
                 tabs[0].id || 0,
                 { type: MESSAGE_TYPES.ProductInfoMessage } as MessageType,
                 (response: ProductInfoResponse) => {
-                    setId(response.productInfo.id);
-                    setTitle(response.productInfo.title);
-                    setPrice(response.productInfo.price);
-                    setPoint(response.productInfo.point);
-                    setUrl(response.productInfo.url);
+                    const { id, title, price, point, url } = response.productInfo;
+                    setId(id);
+                    setTitle(title);
+                    setPrice(price);
+                    setPoint(point);
+                    setUrl(url);
                 }
             );
         });

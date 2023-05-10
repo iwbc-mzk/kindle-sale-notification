@@ -1,10 +1,4 @@
-import Button from "@mui/material/Button/Button";
-
-import { MessageType, ProductInfoResponse, ProductInfo } from "./types";
-import { MESSAGE_TYPES } from "./const";
-
-
-const isKindleUnlimited = () => {
+export const isKindleUnlimited = () => {
     const xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[1]/span/a/span[2]/i";
 
     const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
@@ -13,14 +7,14 @@ const isKindleUnlimited = () => {
 }
 
 
-const getProductTitle = () => {
+export const getProductTitle = () => {
     const titleElement = document.getElementById("productTitle");
     const title = titleElement ? titleElement.textContent ? titleElement.textContent : "" : "";
 
     return title.trim();
 }
 
-const getProductPrice = () => {
+export const getProductPrice = () => {
     const yen = "￥";
 
     var xpath: string;
@@ -42,7 +36,7 @@ const getProductPrice = () => {
     return price;
 }
 
-const getProductPoint = () => {
+export const getProductPoint = () => {
     const pt = "pt";
 
     var xpath: string;
@@ -51,7 +45,7 @@ const getProductPoint = () => {
     } else {
         xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]";
     }
-    
+
     const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
     const pointElement = xPathResult.snapshotItem(0);
     const rawText = pointElement?.firstChild?.nodeValue || "";
@@ -64,14 +58,14 @@ const getProductPoint = () => {
     return point;
 }
 
-const getUrl = () => {
+export const getProductUrl = () => {
     const { protocol, hostname } = window.location;
-    const id = getId();
+    const id = getProductId();
 
     return `${protocol}//${hostname}/dp/${id}`;
 }
 
-const getId = () => {
+export const getProductId = () => {
     const { pathname } = window.location;
 
     const dpReg = new RegExp("/dp/[A-Z0-9]{10}");
@@ -85,47 +79,3 @@ const getId = () => {
         return gp_match ? gp_match[0].replace("/gp/product/", "").replace("/", "") : "";
     }
 }
-
-const messageFromPopup = (msg: MessageType, sender: chrome.runtime.MessageSender, sendResponse: (response: ProductInfoResponse) => void) => {
-    if (msg.type !== MESSAGE_TYPES.ProductInfoMessage) {
-        return;
-    }
-
-    console.log("message resieved.", msg)
-
-    const id = getId();
-    const title = getProductTitle();
-    const price = getProductPrice();
-    const point = getProductPoint();
-    const url = getUrl();
-    
-    const productInfo: ProductInfo = {
-        id,
-        title,
-        price,
-        point,
-        url
-    }
-
-    const response: ProductInfoResponse = { productInfo }
-    console.log("response: ", response)
-
-    sendResponse(response)
-}
-
-chrome.runtime.onMessage.addListener(messageFromPopup);
-
-function App() {
-    console.log(process.env)
-    return (
-        <div>
-            <Button
-                variant="outlined"
-            >
-                Sale Notification
-            </Button>
-        </div>
-    );
-}
-
-export default App;
