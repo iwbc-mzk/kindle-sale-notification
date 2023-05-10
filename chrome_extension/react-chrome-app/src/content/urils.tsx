@@ -1,90 +1,118 @@
-import aws from "aws-sdk";
-import { EnvVariables } from "../types";
+import aws from 'aws-sdk';
+import { EnvVariables } from '../types';
 
 export const isKindleUnlimited = () => {
-    const xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[1]/span/a/span[2]/i";
+    const xpath =
+        '//*[@id="tmmSwatches"]/ul/li[1]/span[1]/span[1]/span/a/span[2]/i';
 
-    const xpathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    const xpathResult = document.evaluate(
+        xpath,
+        document,
+        null,
+        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+        null
+    );
     const unlimitedElement = xpathResult.snapshotItem(0);
-    return unlimitedElement !== null
-}
-
+    return unlimitedElement !== null;
+};
 
 export const getProductTitle = () => {
-    const titleElement = document.getElementById("productTitle");
-    const title = titleElement ? titleElement.textContent ? titleElement.textContent : "" : "";
+    const titleElement = document.getElementById('productTitle');
+    const title = titleElement
+        ? titleElement.textContent
+            ? titleElement.textContent
+            : ''
+        : '';
 
     return title.trim();
-}
+};
 
 export const getProductPrice = () => {
-    const yen = "￥";
+    const yen = '￥';
 
-    var xpath: string;
+    let xpath: string;
     if (isKindleUnlimited()) {
-        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[4]/span[1]/a";
+        xpath = '//*[@id="tmmSwatches"]/ul/li[1]/span[1]/span[4]/span[1]/a';
     } else {
-        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span/span[1]/span/a/span[2]/span[1]";
+        xpath =
+            '//*[@id="tmmSwatches"]/ul/li[1]/span/span[1]/span/a/span[2]/span[1]';
     }
 
-    const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    const xPathResult = document.evaluate(
+        xpath,
+        document,
+        null,
+        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+        null
+    );
     const priceElement = xPathResult.snapshotItem(0);
-    const text = priceElement?.firstChild?.nodeValue || "";
+    const text = priceElement?.firstChild?.nodeValue || '';
 
     const re = new RegExp(`^${yen}([0-9]+,{0,1})+`);
     const priceMatch = text.trim().match(re);
-    const priceText = priceMatch ? priceMatch[0].replace(yen, "").replaceAll(",", "") : "0";
-    const price: number = Number(priceText);
+    const priceText = priceMatch
+        ? priceMatch[0].replace(yen, '').replaceAll(',', '')
+        : '0';
+    const price = Number(priceText);
 
     return price;
-}
+};
 
 export const getProductPoint = () => {
-    const pt = "pt";
+    const pt = 'pt';
 
-    var xpath: string;
+    let xpath: string;
     if (isKindleUnlimited()) {
-        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span[1]/span[4]/span[2]";
+        xpath = '//*[@id="tmmSwatches"]/ul/li[1]/span[1]/span[4]/span[2]';
     } else {
-        xpath = "//*[@id=\"tmmSwatches\"]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]";
+        xpath =
+            '//*[@id="tmmSwatches"]/ul/li[1]/span/span[1]/span/a/span[2]/span[2]';
     }
 
-    const xPathResult = document.evaluate(xpath, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+    const xPathResult = document.evaluate(
+        xpath,
+        document,
+        null,
+        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+        null
+    );
     const pointElement = xPathResult.snapshotItem(0);
-    const rawText = pointElement?.firstChild?.nodeValue || "";
+    const rawText = pointElement?.firstChild?.nodeValue || '';
 
     const re = new RegExp(`[0-9]*${pt}`);
-    const pointMatch = rawText.match(re) || "";
-    const pointText = pointMatch ? pointMatch[0].replace(pt, "") : "0";
-    const point: number = Number(pointText);
+    const pointMatch = rawText.match(re) || '';
+    const pointText = pointMatch ? pointMatch[0].replace(pt, '') : '0';
+    const point = Number(pointText);
 
     return point;
-}
+};
 
 export const getProductUrl = () => {
     const { protocol, hostname } = window.location;
     const id = getProductId();
 
     return `${protocol}//${hostname}/dp/${id}`;
-}
+};
 
 export const getProductId = () => {
     const { pathname } = window.location;
 
-    const dpReg = new RegExp("/dp/[A-Z0-9]{10}");
+    const dpReg = new RegExp('/dp/[A-Z0-9]{10}');
     const dpMatch = pathname.match(dpReg);
     if (dpMatch) {
-        return dpMatch[0]?.replace("/dp/", "").replace("/", "");
+        return dpMatch[0]?.replace('/dp/', '').replace('/', '');
     } else {
-        const gp_re = new RegExp("/gp/product/[A-Z0-9]{10}");
+        const gp_re = new RegExp('/gp/product/[A-Z0-9]{10}');
         const gp_match = pathname.match(gp_re);
 
-        return gp_match ? gp_match[0].replace("/gp/product/", "").replace("/", "") : "";
+        return gp_match
+            ? gp_match[0].replace('/gp/product/', '').replace('/', '')
+            : '';
     }
-}
+};
 
 export const getEnvVariables = () => {
-    const { 
+    const {
         AWS_REGIN: awsRegion,
         AWS_ACCESS_KEY_ID: awsAccessKeyId,
         AWS_SECRET_ACCESS_KEY: awsSecretAccessKey,
@@ -92,20 +120,23 @@ export const getEnvVariables = () => {
     } = process.env;
 
     const env: EnvVariables = {
-        awsRegion: awsRegion || "",
-        awsAccessKeyId: awsAccessKeyId || "",
-        awsSecretAccessKey: awsSecretAccessKey || "",
-        awsLambdaFunctionUrl: awsLambdaFunctionUrl || ""
+        awsRegion: awsRegion || '',
+        awsAccessKeyId: awsAccessKeyId || '',
+        awsSecretAccessKey: awsSecretAccessKey || '',
+        awsLambdaFunctionUrl: awsLambdaFunctionUrl || '',
     };
 
     return env;
-}
+};
 
-export const createAwsCredentials = (awsAccessKeyId: string, awsSecretAccessKey: string) => {
+export const createAwsCredentials = (
+    awsAccessKeyId: string,
+    awsSecretAccessKey: string
+) => {
     return new aws.Credentials(awsAccessKeyId, awsSecretAccessKey);
 };
 
 export const createAwsCredentialsFromEnv = () => {
     const env = getEnvVariables();
     return createAwsCredentials(env.awsAccessKeyId, env.awsSecretAccessKey);
-}
+};

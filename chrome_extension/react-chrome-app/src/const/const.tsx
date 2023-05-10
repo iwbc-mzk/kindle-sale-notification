@@ -1,3 +1,3 @@
 export const MESSAGE_TYPES = {
-    ProductInfoMessage: "PRODUCT_INFO_MESSAGE"
-}
+    ProductInfoMessage: 'PRODUCT_INFO_MESSAGE',
+};

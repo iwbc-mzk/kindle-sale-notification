@@ -1,5 +1,5 @@
 export type MessageType = {
-    type: string
+    type: string;
 };
 
 export type ProductInfoResponse = {
@@ -7,16 +7,16 @@ export type ProductInfoResponse = {
 };
 
 export type ProductInfo = {
-    id: string,
-    title: string,
-    price: number,
-    point: number,
-    url: string,
+    id: string;
+    title: string;
+    price: number;
+    point: number;
+    url: string;
 };
 
 export type EnvVariables = {
-    awsRegion: string,
-    awsAccessKeyId: string,
-    awsSecretAccessKey: string,
-    awsLambdaFunctionUrl: string,
+    awsRegion: string;
+    awsAccessKeyId: string;
+    awsSecretAccessKey: string;
+    awsLambdaFunctionUrl: string;
 };

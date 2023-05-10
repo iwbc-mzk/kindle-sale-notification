@@ -1,15 +1,23 @@
+import { MessageType, ProductInfoResponse, ProductInfo } from '../types';
+import { MESSAGE_TYPES } from '../const';
+import {
+    getProductId,
+    getProductTitle,
+    getProductPrice,
+    getProductPoint,
+    getProductUrl,
+} from './urils';
 
-import { MessageType, ProductInfoResponse, ProductInfo } from "../types";
-import { MESSAGE_TYPES } from "../const";
-import { getProductId, getProductTitle, getProductPrice, getProductPoint, getProductUrl } from "./urils";
-
-
-export const messageFromPopup = (msg: MessageType, sender: chrome.runtime.MessageSender, sendResponse: (response: ProductInfoResponse) => void) => {
+export const messageFromPopup = (
+    msg: MessageType,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (response: ProductInfoResponse) => void
+) => {
     if (msg.type !== MESSAGE_TYPES.ProductInfoMessage) {
         return;
     }
 
-    console.log("message resieved.", msg)
+    console.log('message resieved.', msg);
 
     const id = getProductId();
     const title = getProductTitle();
@@ -22,11 +30,11 @@ export const messageFromPopup = (msg: MessageType, sender: chrome.runtime.Messag
         title,
         price,
         point,
-        url
-    }
+        url,
+    };
 
-    const response: ProductInfoResponse = { productInfo }
-    console.log("response: ", response)
+    const response: ProductInfoResponse = { productInfo };
+    console.log('response: ', response);
 
-    sendResponse(response)
-}
+    sendResponse(response);
+};
