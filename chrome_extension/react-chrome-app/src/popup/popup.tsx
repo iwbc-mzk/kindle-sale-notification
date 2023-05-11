@@ -1,9 +1,21 @@
 import React from 'react';
-import { TextField } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { TextField } from '@mui/material';
+import { Button } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-import { MessageType, ProductInfoResponse } from '../types';
+import {
+    ProductInfoMessage,
+    ProductInfoResponse,
+    RegisterMessage,
+    RegisterResponse,
+} from '../types';
 import { MESSAGE_TYPES } from '../const';
+
+const RegisterButton = styled(Button)({
+    boxShadow: 'none',
+    margin: '10px 0px',
+});
 
 const Popup = () => {
     const [id, setId] = useState('');
@@ -13,6 +25,10 @@ const Popup = () => {
     const [url, setUrl] = useState('');
 
     useEffect(() => {
+        setProductInfo();
+    }, []);
+
+    const setProductInfo = () => {
         chrome.tabs &&
             chrome.tabs.query(
                 {
@@ -24,7 +40,7 @@ const Popup = () => {
                         tabs[0].id || 0,
                         {
                             type: MESSAGE_TYPES.ProductInfoMessage,
-                        } as MessageType,
+                        } as ProductInfoMessage,
                         (response: ProductInfoResponse) => {
                             const { id, title, price, point, url } =
                                 response.productInfo;
@@ -37,20 +53,40 @@ const Popup = () => {
                     );
                 }
             );
-    }, []);
+    };
+
+    const sendRegisterMessage = () => {
+        chrome.tabs &&
+            chrome.tabs.query(
+                {
+                    active: true,
+                    currentWindow: true,
+                },
+                (tabs) => {
+                    chrome.tabs.sendMessage(
+                        tabs[0].id || 0,
+                        {
+                            type: MESSAGE_TYPES.RegisterMessage,
+                            productInfo: { id, title, price, point, url },
+                        } as RegisterMessage,
+                        (response: RegisterResponse) => {
+                            const { ok, message } = response;
+                        }
+                    );
+                }
+            );
+    };
+
+    const isIdEntered = () => {
+        return id != null && id !== '';
+    };
 
     return (
         <div style={{ width: '300px' }}>
             <header>
                 <h5>Kindle Sale Notification</h5>
-                <TextField
-                    label="AWS Lambda Functions URL"
-                    id="lambda_functions_url"
-                    size="small"
-                    margin="normal"
-                    variant="standard"
-                    fullWidth
-                />
+            </header>
+            <div>
                 <TextField
                     label="Id"
                     id="product_id"
@@ -58,6 +94,8 @@ const Popup = () => {
                     size="small"
                     margin="dense"
                     onChange={(e) => setId(e.target.value)}
+                    error={!isIdEntered()}
+                    helperText={isIdEntered() ? '' : 'Id is required.'}
                     fullWidth
                 />
                 <TextField
@@ -96,7 +134,15 @@ const Popup = () => {
                     onChange={(e) => setUrl(e.target.value)}
                     fullWidth
                 />
-            </header>
+            </div>
+            <RegisterButton
+                variant="contained"
+                disabled={!isIdEntered()}
+                onClick={() => sendRegisterMessage()}
+                fullWidth
+            >
+                REGISTER
+            </RegisterButton>
         </div>
     );
 };

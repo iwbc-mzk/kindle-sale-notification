@@ -1,4 +1,10 @@
-import { MessageType, ProductInfoResponse, ProductInfo } from '../types';
+import {
+    ProductInfoMessage,
+    ProductInfoResponse,
+    RegisterMessage,
+    ProductInfo,
+    RegisterResponse,
+} from '../types';
 import { MESSAGE_TYPES } from '../const';
 import {
     getProductId,
@@ -6,10 +12,11 @@ import {
     getProductPrice,
     getProductPoint,
     getProductUrl,
+    register,
 } from './urils';
 
-export const messageFromPopup = (
-    msg: MessageType,
+export const productInfoListener = (
+    msg: ProductInfoMessage,
     sender: chrome.runtime.MessageSender,
     sendResponse: (response: ProductInfoResponse) => void
 ) => {
@@ -37,4 +44,21 @@ export const messageFromPopup = (
     console.log('response: ', response);
 
     sendResponse(response);
+};
+
+export const registerListener = async (
+    msg: RegisterMessage,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (Response: RegisterResponse) => void
+) => {
+    if (msg.type !== MESSAGE_TYPES.RegisterMessage) {
+        return;
+    }
+
+    console.log('message resieved.', msg);
+
+    const { productInfo } = msg;
+    const resJson = await register(productInfo);
+
+    sendResponse(resJson);
 };

@@ -1,9 +1,19 @@
-export type MessageType = {
+export type ProductInfoMessage = {
     type: string;
 };
 
 export type ProductInfoResponse = {
     productInfo: ProductInfo;
+};
+
+export type RegisterMessage = {
+    type: string;
+    productInfo: ProductInfo;
+};
+
+export type RegisterResponse = {
+    ok: boolean;
+    message: string;
 };
 
 export type ProductInfo = {
