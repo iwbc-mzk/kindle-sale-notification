@@ -3,9 +3,9 @@ import { SignatureV4 } from '@aws-sdk/signature-v4';
 import { Sha256 } from '@aws-crypto/sha256-js';
 import { HttpRequest } from '@aws-sdk/protocol-http';
 
-import { EnvVariables, ProductInfo } from '../types';
+import { EnvVariables, ProductInfo, LambdaResponse } from '../types';
 
-export const isKindleUnlimited = () => {
+export const isKindleUnlimited = (): boolean => {
     const xpath =
         '//*[@id="tmmSwatches"]/ul/li[1]/span[1]/span[1]/span/a/span[2]/i';
 
@@ -20,18 +20,14 @@ export const isKindleUnlimited = () => {
     return unlimitedElement !== null;
 };
 
-export const getProductTitle = () => {
+export const getProductTitle = (): string => {
     const titleElement = document.getElementById('productTitle');
-    const title = titleElement
-        ? titleElement.textContent
-            ? titleElement.textContent
-            : ''
-        : '';
+    const title = titleElement?.textContent ?? '';
 
     return title.trim();
 };
 
-export const getProductPrice = () => {
+export const getProductPrice = (): number => {
     const yen = '￥';
 
     let xpath: string;
@@ -50,19 +46,20 @@ export const getProductPrice = () => {
         null
     );
     const priceElement = xPathResult.snapshotItem(0);
-    const text = priceElement?.firstChild?.nodeValue || '';
+    const text = priceElement?.firstChild?.nodeValue ?? '';
 
     const re = new RegExp(`^${yen}([0-9]+,{0,1})+`);
     const priceMatch = text.trim().match(re);
-    const priceText = priceMatch
-        ? priceMatch[0].replace(yen, '').replaceAll(',', '')
-        : '0';
-    const price = Number(priceText);
-
-    return price;
+    if (priceMatch) {
+        const priceText = priceMatch[0].replace(yen, '').replaceAll(',', '');
+        const price = Number(priceText);
+        return price;
+    } else {
+        return 0;
+    }
 };
 
-export const getProductPoint = () => {
+export const getProductPoint = (): number => {
     const pt = 'pt';
 
     let xpath: string;
@@ -81,24 +78,24 @@ export const getProductPoint = () => {
         null
     );
     const pointElement = xPathResult.snapshotItem(0);
-    const rawText = pointElement?.firstChild?.nodeValue || '';
+    const rawText = pointElement?.firstChild?.nodeValue ?? '';
 
     const re = new RegExp(`[0-9]*${pt}`);
-    const pointMatch = rawText.match(re) || '';
+    const pointMatch = rawText.match(re) ?? '';
     const pointText = pointMatch ? pointMatch[0].replace(pt, '') : '0';
     const point = Number(pointText);
 
     return point;
 };
 
-export const getProductUrl = () => {
+export const getProductUrl = (): string => {
     const { protocol, hostname } = window.location;
     const id = getProductId();
 
     return `${protocol}//${hostname}/dp/${id}`;
 };
 
-export const getProductId = () => {
+export const getProductId = (): string => {
     const { pathname } = window.location;
 
     const dpReg = new RegExp('/dp/[A-Z0-9]{10}');
@@ -115,7 +112,7 @@ export const getProductId = () => {
     }
 };
 
-export const getEnvVariables = () => {
+export const getEnvVariables = (): EnvVariables => {
     const {
         AWS_REGIN: awsRegion,
         AWS_ACCESS_KEY_ID: awsAccessKeyId,
@@ -136,7 +133,7 @@ export const getEnvVariables = () => {
 export const createAwsCredentials = (
     awsAccessKeyId: string,
     awsSecretAccessKey: string
-) => {
+): aws.Credentials => {
     return new aws.Credentials(awsAccessKeyId, awsSecretAccessKey);
 };
 
@@ -145,7 +142,7 @@ export const createAwsCredentialsFromEnv = () => {
     return createAwsCredentials(env.awsAccessKeyId, env.awsSecretAccessKey);
 };
 
-export const register = async (productInfo: ProductInfo) => {
+export const register = async (productInfo: ProductInfo): Promise<LambdaResponse> => {
     const env = getEnvVariables();
     const lambdaUrlHostname = new URL(env.awsLambdaFunctionUrl).host;
     const region = env.awsRegion;

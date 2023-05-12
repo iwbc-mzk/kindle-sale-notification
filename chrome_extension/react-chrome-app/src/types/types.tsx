@@ -1,3 +1,8 @@
+export type LambdaResponse = {
+    ok: boolean;
+    message: string
+};
+
 export type ProductInfoMessage = {
     type: string;
 };
@@ -11,10 +16,7 @@ export type RegisterMessage = {
     productInfo: ProductInfo;
 };
 
-export type RegisterResponse = {
-    ok: boolean;
-    message: string;
-};
+export type RegisterResponse = LambdaResponse;
 
 export type ProductInfo = {
     id: string;
