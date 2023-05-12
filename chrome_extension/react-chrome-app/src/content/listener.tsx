@@ -46,7 +46,7 @@ export const productInfoListener = (
     sendResponse(response);
 };
 
-export const registerListener = async (
+export const registerListener = (
     msg: RegisterMessage,
     sender: chrome.runtime.MessageSender,
     sendResponse: (Response: RegisterResponse) => void
@@ -58,7 +58,11 @@ export const registerListener = async (
     console.log('message resieved.', msg);
 
     const { productInfo } = msg;
-    const resJson = await register(productInfo);
+    register(productInfo).then((res) => {
+        sendResponse(res as RegisterResponse);
+    });
 
-    sendResponse(resJson);
+    // 非同期通信を行う場合はtrueを返し、メッセージ送信元に非同期通信することを知らせる必要がある。
+    // https://developer.chrome.com/docs/extensions/mv3/messaging/#:~:text=In%20the%20above%20example%2C%20sendResponse()%20was%20called%20synchronously.%20If%20you%20want%20to%20asynchronously%20use%20sendResponse()%2C%20add%20return%20true%3B%20to%20the%20onMessage%20event%20handler.
+    return true;
 };

@@ -3,6 +3,7 @@ import React from 'react';
 import { useEffect, useState } from 'react';
 import { TextField } from '@mui/material';
 import { Button } from '@mui/material';
+import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 
 import {
@@ -12,6 +13,7 @@ import {
     RegisterResponse,
 } from '../types';
 import { MESSAGE_TYPES } from '../const';
+import { sleep } from '../utils';
 
 const RegisterButton = styled(Button)({
     boxShadow: 'none',
@@ -41,6 +43,9 @@ const Popup = () => {
     const [point, setPoint] = useState<number>(0);
     const [url, setUrl] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [tooltipTitle, setTooltipTitle] = useState<string>('');
+
+    const isTooltipOpen = Boolean(tooltipTitle);
 
     useEffect(() => {
         setProductInfo();
@@ -70,8 +75,12 @@ const Popup = () => {
             productInfo: { id, title, price, point, url },
         };
         const callback = (response: RegisterResponse) => {
-            // const { ok, message } = response;
             setIsLoading(false);
+
+            const { ok } = response;
+            const msg = ok ? 'Success!!' : 'Failed';
+            setTooltipTitle(msg);
+            sleep(5000).then(() => setTooltipTitle(''));
         };
 
         sendMessageToActiveTab(message, callback);
@@ -135,14 +144,22 @@ const Popup = () => {
                     fullWidth
                 />
             </div>
-            <RegisterButton
-                variant="contained"
-                disabled={!isIdEntered() || isLoading}
-                onClick={() => sendRegisterMessage()}
-                fullWidth
+            <Tooltip
+                title={tooltipTitle}
+                open={isTooltipOpen}
+                disableFocusListener
+                disableHoverListener
+                disableTouchListener
             >
-                登録
-            </RegisterButton>
+                <RegisterButton
+                    variant="contained"
+                    disabled={!isIdEntered() || isLoading}
+                    onClick={() => sendRegisterMessage()}
+                    fullWidth
+                >
+                    登録
+                </RegisterButton>
+            </Tooltip>
         </div>
     );
 };
