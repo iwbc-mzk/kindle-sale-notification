@@ -35,11 +35,12 @@ const sendMessageToActiveTab = (
 };
 
 const Popup = () => {
-    const [id, setId] = useState('');
-    const [title, setTitle] = useState('');
-    const [price, setPrice] = useState(0);
-    const [point, setPoint] = useState(0);
-    const [url, setUrl] = useState('');
+    const [id, setId] = useState<string>('');
+    const [title, setTitle] = useState<string>('');
+    const [price, setPrice] = useState<number>(0);
+    const [point, setPoint] = useState<number>(0);
+    const [url, setUrl] = useState<string>('');
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     useEffect(() => {
         setProductInfo();
@@ -62,12 +63,15 @@ const Popup = () => {
     };
 
     const sendRegisterMessage = () => {
+        setIsLoading(true);
+
         const message: RegisterMessage = {
             type: MESSAGE_TYPES.RegisterMessage,
             productInfo: { id, title, price, point, url },
         };
         const callback = (response: RegisterResponse) => {
-            const { ok, message } = response;
+            // const { ok, message } = response;
+            setIsLoading(false);
         };
 
         sendMessageToActiveTab(message, callback);
@@ -133,11 +137,11 @@ const Popup = () => {
             </div>
             <RegisterButton
                 variant="contained"
-                disabled={!isIdEntered()}
+                disabled={!isIdEntered() || isLoading}
                 onClick={() => sendRegisterMessage()}
                 fullWidth
             >
-                REGISTER
+                登録
             </RegisterButton>
         </div>
     );
