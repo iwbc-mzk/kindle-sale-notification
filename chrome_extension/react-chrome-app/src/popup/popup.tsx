@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from 'react';
 import { useEffect, useState } from 'react';
 import { TextField } from '@mui/material';
@@ -17,6 +18,22 @@ const RegisterButton = styled(Button)({
     margin: '10px 0px',
 });
 
+const sendMessageToActiveTab = (
+    message: any,
+    callback: (response: any) => void
+): void => {
+    chrome.tabs &&
+        chrome.tabs.query(
+            {
+                active: true,
+                currentWindow: true,
+            },
+            (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id || 0, message, callback);
+            }
+        );
+};
+
 const Popup = () => {
     const [id, setId] = useState('');
     const [title, setTitle] = useState('');
@@ -29,52 +46,31 @@ const Popup = () => {
     }, []);
 
     const setProductInfo = () => {
-        chrome.tabs &&
-            chrome.tabs.query(
-                {
-                    active: true,
-                    currentWindow: true,
-                },
-                (tabs) => {
-                    chrome.tabs.sendMessage(
-                        tabs[0].id || 0,
-                        {
-                            type: MESSAGE_TYPES.ProductInfoMessage,
-                        } as ProductInfoMessage,
-                        (response: ProductInfoResponse) => {
-                            const { id, title, price, point, url } =
-                                response.productInfo;
-                            setId(id);
-                            setTitle(title);
-                            setPrice(price);
-                            setPoint(point);
-                            setUrl(url);
-                        }
-                    );
-                }
-            );
+        const message: ProductInfoMessage = {
+            type: MESSAGE_TYPES.ProductInfoMessage,
+        };
+        const callback = (response: ProductInfoResponse) => {
+            const { id, title, price, point, url } = response.productInfo;
+            setId(id);
+            setTitle(title);
+            setPrice(price);
+            setPoint(point);
+            setUrl(url);
+        };
+
+        sendMessageToActiveTab(message, callback);
     };
 
     const sendRegisterMessage = () => {
-        chrome.tabs &&
-            chrome.tabs.query(
-                {
-                    active: true,
-                    currentWindow: true,
-                },
-                (tabs) => {
-                    chrome.tabs.sendMessage(
-                        tabs[0].id || 0,
-                        {
-                            type: MESSAGE_TYPES.RegisterMessage,
-                            productInfo: { id, title, price, point, url },
-                        } as RegisterMessage,
-                        (response: RegisterResponse) => {
-                            const { ok, message } = response;
-                        }
-                    );
-                }
-            );
+        const message: RegisterMessage = {
+            type: MESSAGE_TYPES.RegisterMessage,
+            productInfo: { id, title, price, point, url },
+        };
+        const callback = (response: RegisterResponse) => {
+            const { ok, message } = response;
+        };
+
+        sendMessageToActiveTab(message, callback);
     };
 
     const isIdEntered = () => {
