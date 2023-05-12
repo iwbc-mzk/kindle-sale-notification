@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@mui/material';
+import Popover from '@mui/material/Popover';
 
 import { productInfoListener, registerListener } from './listener';
 import {
@@ -12,11 +13,23 @@ import {
 } from './urils';
 
 function App() {
+    const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+
     const id = getProductId();
     const title = getProductTitle();
     const price = getProductPrice();
     const point = getProductPoint();
     const url = getProductUrl();
+
+    const isPoooverOpen = Boolean(anchorEl);
+
+    const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handlePopoverClose = () => {
+        setAnchorEl(null);
+    };
 
     const registerProduct = async () => {
         const productInfo = { id, title, price, point, url };
@@ -32,9 +45,43 @@ function App() {
 
     return (
         <div>
-            <Button variant="outlined" onClick={() => registerProduct()}>
-                Sale Notification
+            <Button
+                onClick={() => registerProduct()}
+                onMouseEnter={handlePopoverOpen}
+                onMouseLeave={handlePopoverClose}
+            >
+                Kindle Sale Notification
             </Button>
+            <Popover
+                sx={{
+                    pointerEvents: 'none',
+                }}
+                open={isPoooverOpen}
+                anchorEl={anchorEl}
+                anchorOrigin={{
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                }}
+                transformOrigin={{
+                    vertical: 'top',
+                    horizontal: 'center',
+                }}
+                onClose={handlePopoverClose}
+                disableRestoreFocus
+            >
+                <div style={{ margin: '10px' }}>
+                    id: {id}
+                    <br />
+                    title: {title}
+                    <br />
+                    price: {price}
+                    <br />
+                    point: {point}
+                    <br />
+                    url: {url}
+                    <br />
+                </div>
+            </Popover>
         </div>
     );
 }
