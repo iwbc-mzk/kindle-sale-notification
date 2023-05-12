@@ -35,7 +35,7 @@ function App() {
     const point = getProductPoint();
     const url = getProductUrl();
 
-    const isPoooverOpen = Boolean(anchorEl);
+    const isPopoverOpen = Boolean(anchorEl);
 
     const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -74,7 +74,7 @@ function App() {
                 sx={{
                     pointerEvents: 'none',
                 }}
-                open={isPoooverOpen}
+                open={isPopoverOpen}
                 anchorEl={anchorEl}
                 anchorOrigin={{
                     vertical: 'bottom',
