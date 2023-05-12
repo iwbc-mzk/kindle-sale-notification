@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@mui/material';
 import Popover from '@mui/material/Popover';
+import { styled } from '@mui/material/styles';
 
 import { productInfoListener, registerListener } from './listener';
 import {
@@ -12,8 +13,21 @@ import {
     register,
 } from './urils';
 
+const RegisterButton = styled(Button)({
+    margin: '10px 0px',
+    width: '100%',
+    height: '30px',
+    border: '1px solid #888C8C',
+    borderRadius: '8px',
+    boxShadow: '0 2px 5px 0 rgba(213, 217, 217, .5)',
+    fontFamily: 'inherit',
+    fontSize: '13px',
+    color: '#0F1111',
+});
+
 function App() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const id = getProductId();
     const title = getProductTitle();
@@ -32,6 +46,8 @@ function App() {
     };
 
     const registerProduct = async () => {
+        setIsLoading(true);
+
         const productInfo = { id, title, price, point, url };
         const resJson = await register(productInfo);
         console.log(resJson);
@@ -41,17 +57,19 @@ function App() {
         } else {
             alert(`Register Faild.\n${resJson.message}`);
         }
+        setIsLoading(false);
     };
 
     return (
         <div>
-            <Button
+            <RegisterButton
                 onClick={() => registerProduct()}
                 onMouseEnter={handlePopoverOpen}
                 onMouseLeave={handlePopoverClose}
+                disabled={isLoading}
             >
-                Kindle Sale Notification
-            </Button>
+                セール時に通知
+            </RegisterButton>
             <Popover
                 sx={{
                     pointerEvents: 'none',
