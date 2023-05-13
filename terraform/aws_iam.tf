@@ -217,6 +217,17 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_get_ite
   policy_arn = aws_iam_policy.dynamodb_access_policy.arn
 }
 
+# Delete Item
+resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_delete_item" {
+  role       = aws_iam_role.ksn_delete_item.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_delete_item" {
+  role       = aws_iam_role.ksn_delete_item.name
+  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
+}
+
 # Step Functions
 resource "aws_iam_role_policy_attachment" "attach_xray_access_policy_to_ksn_state_machine" {
   role       = aws_iam_role.ksn_state_machine.name
@@ -279,5 +290,10 @@ resource "aws_iam_role" "ksn_register_item" {
 
 resource "aws_iam_role" "ksn_get_items" {
   name               = "ksn_get_items"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
+}
+
+resource "aws_iam_role" "ksn_delete_item" {
+  name               = "ksn_delete_item"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
 }

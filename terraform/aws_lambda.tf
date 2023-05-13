@@ -37,6 +37,13 @@ data "archive_file" "archive_get_items" {
   output_file_mode = "0666"
 }
 
+data "archive_file" "archive_delete_item" {
+  type             = "zip"
+  source_file      = "${local.lambda_dir}/api/delete_item.py"
+  output_path      = "${local.lambda_dir}/api/delete_item.zip"
+  output_file_mode = "0666"
+}
+
 # ------------------------------------------------------------------------------------------------------
 # Lambda Functions
 # ------------------------------------------------------------------------------------------------------
@@ -124,6 +131,23 @@ resource "aws_lambda_function" "get_items" {
   source_code_hash = data.archive_file.archive_get_items.output_base64sha256
   runtime          = local.runtime
   handler          = "get_items.lambda_handler"
+  timeout          = 10
+
+  environment {
+    variables = {
+      table_name = aws_dynamodb_table.ksn.name
+    }
+  }
+}
+
+resource "aws_lambda_function" "delete_item" {
+  filename      = data.archive_file.archive_delete_item.output_path
+  function_name = "ksn_delete_item"
+  role          = aws_iam_role.ksn_delete_item.arn
+
+  source_code_hash = data.archive_file.archive_delete_item.output_base64sha256
+  runtime          = local.runtime
+  handler          = "delete_item.lambda_handler"
   timeout          = 10
 
   environment {
