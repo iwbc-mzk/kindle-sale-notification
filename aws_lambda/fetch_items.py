@@ -22,15 +22,12 @@ def lambda_handler(event, context):
     step = 10
     for n in range(0, len(items), step):
         entries = []
-        for item in items[n: n + step]:
+        for item in items[n : n + step]:
             entry = {
                 "Id": item["id"],
-                "MessageBody": json.dumps(item, default=decimal_default_proc)
+                "MessageBody": json.dumps(item, default=decimal_default_proc),
             }
             entries.append(entry)
         queue.send_messages(Entries=entries)
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(items, default=decimal_default_proc)
-    }
+    return {"statusCode": 200, "body": json.dumps(items, default=decimal_default_proc)}

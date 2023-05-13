@@ -6,13 +6,7 @@ import json
 
 import boto3
 
-ATTRIBUTES = [
-    "id",
-    "title",
-    "price",
-    "point",
-    "url"
-]
+ATTRIBUTES = ["id", "title", "price", "point", "url"]
 
 
 def lambda_handler(event, context):
@@ -25,22 +19,15 @@ def lambda_handler(event, context):
         body = {key: val[0] for key, val in parse_qs.items()}
     else:
         body = json.loads(event.get("body", ""))
-    
 
     print(body)
 
-    item = {
-        "discounted": "N",
-        "updated_at": int(datetime.now().timestamp())
-    }
+    item = {"discounted": "N", "updated_at": int(datetime.now().timestamp())}
     for attr in ATTRIBUTES:
         item[attr] = body.get(attr)
 
     if not item.get("id"):
-        return {
-            "ok": False,
-            "message": "Id is required."
-        }
+        return {"ok": False, "message": "Id is required."}
 
     try:
         dynamodb = boto3.resource("dynamodb")
@@ -49,12 +36,6 @@ def lambda_handler(event, context):
         print(f"registered item: {item}")
     except Exception as e:
         print(e)
-        return {
-            "ok": False,
-            "message": "Failed to register item."
-        }
+        return {"ok": False, "message": "Failed to register item."}
 
-    return {
-        "ok": True,
-        "message": "Successfully registered!"
-    }
+    return {"ok": True, "message": "Successfully registered!"}

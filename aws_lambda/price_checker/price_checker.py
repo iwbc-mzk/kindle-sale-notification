@@ -1,7 +1,6 @@
 import json
 import os
 from datetime import datetime
-from urllib.request import HTTPError
 
 from amazon import AmazonScraper
 import boto3
@@ -51,8 +50,9 @@ def lambda_handler(event, context):
             need_update = True
 
     # 前回より100円以上安くなった場合
-    is_discounted = (item.get("price") - item.get("point")) - \
-        (updated_item.get("price") - updated_item.get("point")) >= 100
+    is_discounted = (item.get("price") - item.get("point")) - (
+        updated_item.get("price") - updated_item.get("point")
+    ) >= 100
     updated_item["discounted"] = "Y" if is_discounted else "N"
     need_update |= is_discounted | is_discounted is not item.get("discounted")
 
@@ -68,12 +68,11 @@ def lambda_handler(event, context):
         print(e)
         raise e
     else:
-        queue.delete_messages(Entries=[
-            {
-                "Id": message.message_id,
-                "ReceiptHandle": message.receipt_handle
-            }
-        ])
+        queue.delete_messages(
+            Entries=[
+                {"Id": message.message_id, "ReceiptHandle": message.receipt_handle}
+            ]
+        )
 
     response["ApproximateNumberOfMessages"] -= 1
     return response

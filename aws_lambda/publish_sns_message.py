@@ -11,8 +11,7 @@ def lambda_handler(event, context):
     dynamodb = boto3.resource("dynamodb")
     dynamodb_table = dynamodb.Table(os.environ["table_name"])
     res = dynamodb_table.query(
-        IndexName="discounted",
-        KeyConditionExpression=Key("discounted").eq("Y")
+        IndexName="discounted", KeyConditionExpression=Key("discounted").eq("Y")
     )
     items = res.get("Items", [])
     if not items:
@@ -34,7 +33,4 @@ def lambda_handler(event, context):
 
     sns = boto3.resource("sns")
     topic = sns.Topic(os.environ["topic_arn"])
-    topic.publish(
-        Subject=SUBJECT,
-        Message=message
-    )
+    topic.publish(Subject=SUBJECT, Message=message)
