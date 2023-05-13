@@ -141,7 +141,8 @@ terraform/*.tfstate*
 # google extension
 #-----------------------------
 # dependencies
-chrome_extension/node_modules
+/chrome_extension/react-chrome-app/node_modules
 
 # production
-chrome_extension/build
+/chrome_extension/extension/content.js*
+/chrome_extension/extension/popup.js*
