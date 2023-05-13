@@ -25,8 +25,15 @@ data "archive_file" "archive_publish_sns_message" {
 
 data "archive_file" "archive_register_item" {
   type             = "zip"
-  source_file      = "${local.lambda_dir}/register_item.py"
-  output_path      = "${local.lambda_dir}/register_item.zip"
+  source_file      = "${local.lambda_dir}/api/register_item.py"
+  output_path      = "${local.lambda_dir}/api/register_item.zip"
+  output_file_mode = "0666"
+}
+
+data "archive_file" "archive_get_items" {
+  type             = "zip"
+  source_file      = "${local.lambda_dir}/api/get_items.py"
+  output_path      = "${local.lambda_dir}/api/get_items.zip"
   output_file_mode = "0666"
 }
 
@@ -109,6 +116,23 @@ resource "aws_lambda_function" "register_item" {
   }
 }
 
+resource "aws_lambda_function" "get_items" {
+  filename      = data.archive_file.archive_get_items.output_path
+  function_name = "ksn_get_items"
+  role          = aws_iam_role.ksn_get_items.arn
+
+  source_code_hash = data.archive_file.archive_get_items.output_base64sha256
+  runtime          = local.runtime
+  handler          = "get_items.lambda_handler"
+  timeout          = 10
+
+  environment {
+    variables = {
+      table_name = aws_dynamodb_table.ksn.name
+    }
+  }
+}
+
 # ------------------------------------------------------------------------------------------------------
 # Lambda Function URL
 # ------------------------------------------------------------------------------------------------------
@@ -120,5 +144,6 @@ resource "aws_lambda_function_url" "register_item" {
     allow_credentials = false
     allow_origins     = ["https://www.amazon.co.jp"]
     allow_methods     = ["POST"]
+    allow_headers     = ["*"]
   }
 }

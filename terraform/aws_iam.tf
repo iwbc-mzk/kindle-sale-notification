@@ -91,7 +91,7 @@ data "aws_iam_policy_document" "x_ray_access_policy_document" {
   }
 }
 
-data "aws_iam_policy_document" "lambda_inveke_scope_access_policy_document" {
+data "aws_iam_policy_document" "lambda_invoke_scope_access_policy_document" {
   statement {
     effect  = "Allow"
     actions = ["lambda:InvokeFunction"]
@@ -134,9 +134,9 @@ resource "aws_iam_policy" "x_ray_access_policy" {
   policy = data.aws_iam_policy_document.x_ray_access_policy_document.json
 }
 
-resource "aws_iam_policy" "lambda_inveke_scope_access_policy" {
-  name   = "lambda_inveke_scope_access_policy"
-  policy = data.aws_iam_policy_document.lambda_inveke_scope_access_policy_document.json
+resource "aws_iam_policy" "lambda_invoke_scope_access_policy" {
+  name   = "lambda_invoke_scope_access_policy"
+  policy = data.aws_iam_policy_document.lambda_invoke_scope_access_policy_document.json
 }
 
 resource "aws_iam_policy" "invoke_step_functions_policy" {
@@ -206,6 +206,17 @@ resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_registe
   policy_arn = aws_iam_policy.dynamodb_access_policy.arn
 }
 
+# Get Items
+resource "aws_iam_role_policy_attachment" "attach_AWSLambdaBasicExecutionRole_get_items" {
+  role       = aws_iam_role.ksn_get_items.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+}
+
+resource "aws_iam_role_policy_attachment" "attach_dynamodb_access_policy_get_items" {
+  role       = aws_iam_role.ksn_get_items.name
+  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
+}
+
 # Step Functions
 resource "aws_iam_role_policy_attachment" "attach_xray_access_policy_to_ksn_state_machine" {
   role       = aws_iam_role.ksn_state_machine.name
@@ -222,9 +233,9 @@ resource "aws_iam_role_policy_attachment" "attach_sns_publish_policy_to_ksn_stat
   policy_arn = aws_iam_policy.sns_publish_policy.arn
 }
 
-resource "aws_iam_role_policy_attachment" "attach_lambda_inveke_scope_access_policy_to_ksn_state_machine" {
+resource "aws_iam_role_policy_attachment" "attach_lambda_invoke_scope_access_policy_to_ksn_state_machine" {
   role       = aws_iam_role.ksn_state_machine.name
-  policy_arn = aws_iam_policy.lambda_inveke_scope_access_policy.arn
+  policy_arn = aws_iam_policy.lambda_invoke_scope_access_policy.arn
 }
 
 # Event Bridge
@@ -263,5 +274,10 @@ resource "aws_iam_role" "ksn_scheduler" {
 
 resource "aws_iam_role" "ksn_register_item" {
   name               = "ksn_register_item"
+  assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
+}
+
+resource "aws_iam_role" "ksn_get_items" {
+  name               = "ksn_get_items"
   assume_role_policy = data.aws_iam_policy_document.lambda_assume_policy_document.json
 }
