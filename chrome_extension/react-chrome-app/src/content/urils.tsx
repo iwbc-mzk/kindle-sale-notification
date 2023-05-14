@@ -1,9 +1,7 @@
 import aws from 'aws-sdk';
-import { SignatureV4 } from '@aws-sdk/signature-v4';
-import { Sha256 } from '@aws-crypto/sha256-js';
-import { HttpRequest } from '@aws-sdk/protocol-http';
 
 import { EnvVariables, ProductInfo, LambdaResponse } from '../types';
+import { registerItem } from './api';
 
 export const isKindleUnlimited = (): boolean => {
     const xpath =
@@ -117,14 +115,14 @@ export const getEnvVariables = (): EnvVariables => {
         AWS_REGIN: awsRegion,
         AWS_ACCESS_KEY_ID: awsAccessKeyId,
         AWS_SECRET_ACCESS_KEY: awsSecretAccessKey,
-        AWS_LAMBDA_FUNCTIONS_URL: awsLambdaFunctionUrl,
+        AWS_API_ENDPOINT: awsApiEndpoint,
     } = process.env;
 
     const env: EnvVariables = {
-        awsRegion: awsRegion || '',
-        awsAccessKeyId: awsAccessKeyId || '',
-        awsSecretAccessKey: awsSecretAccessKey || '',
-        awsLambdaFunctionUrl: awsLambdaFunctionUrl || '',
+        awsRegion: awsRegion ?? '',
+        awsAccessKeyId: awsAccessKeyId ?? '',
+        awsSecretAccessKey: awsSecretAccessKey ?? '',
+        awsApiEndpoint: awsApiEndpoint ?? '',
     };
 
     return env;
@@ -142,50 +140,11 @@ export const createAwsCredentialsFromEnv = () => {
     return createAwsCredentials(env.awsAccessKeyId, env.awsSecretAccessKey);
 };
 
-export const register = async (productInfo: ProductInfo): Promise<LambdaResponse> => {
-    const env = getEnvVariables();
-    const lambdaUrlHostname = new URL(env.awsLambdaFunctionUrl).host;
-    const region = env.awsRegion;
-    const credentials = createAwsCredentialsFromEnv();
-
-    if (
-        !region ||
-        !credentials.accessKeyId ||
-        !credentials.secretAccessKey ||
-        !lambdaUrlHostname
-    ) {
-        alert(
-            'Can not find Aws region or access key id or secret access key or lambda functions url.'
-        );
-    }
-
-    const signer = new SignatureV4({
-        region: env.awsRegion,
-        service: 'lambda',
-        sha256: Sha256,
-        credentials: credentials,
-    });
-
-    const body = JSON.stringify(productInfo);
-
-    const req = await signer.sign(
-        new HttpRequest({
-            method: 'POST',
-            protocol: 'https',
-            path: '/',
-            hostname: lambdaUrlHostname,
-            headers: {
-                host: lambdaUrlHostname,
-            },
-            body: body,
-        })
-    );
-    console.log(req);
-
-    const res = await fetch(env.awsLambdaFunctionUrl, { ...req });
-    console.log('res: ', res);
+export const register = async (
+    productInfo: ProductInfo
+): Promise<LambdaResponse> => {
+    const res = await registerItem(JSON.stringify(productInfo));
     const resJson = await res.json();
-    console.log('resJson: ', resJson);
 
     return resJson;
 };

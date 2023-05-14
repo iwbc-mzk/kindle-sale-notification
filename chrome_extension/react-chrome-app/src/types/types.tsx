@@ -1,6 +1,7 @@
 export type LambdaResponse = {
     ok: boolean;
-    message: string
+    message: string;
+    body: unknown;
 };
 
 export type ProductInfoMessage = {
@@ -30,5 +31,5 @@ export type EnvVariables = {
     awsRegion: string;
     awsAccessKeyId: string;
     awsSecretAccessKey: string;
-    awsLambdaFunctionUrl: string;
+    awsApiEndpoint: string;
 };
