@@ -158,16 +158,11 @@ resource "aws_lambda_function" "delete_item" {
 }
 
 # ------------------------------------------------------------------------------------------------------
-# Lambda Function URL
+# Lambda Permission
 # ------------------------------------------------------------------------------------------------------
-resource "aws_lambda_function_url" "register_item" {
-  function_name      = aws_lambda_function.register_item.function_name
-  authorization_type = "AWS_IAM"
-
-  cors {
-    allow_credentials = false
-    allow_origins     = ["https://www.amazon.co.jp"]
-    allow_methods     = ["POST"]
-    allow_headers     = ["*"]
-  }
+resource "aws_lambda_permission" "invoke_register_item_permission" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.register_item.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/items"
 }
