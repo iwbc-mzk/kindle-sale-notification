@@ -27,7 +27,11 @@ def lambda_handler(event, context):
         item[attr] = body.get(attr)
 
     if not item.get("id"):
-        return {"ok": False, "message": "Id is required."}
+        return {
+            "isBase64Encoded": False,
+            "statusCode": 400,
+            "body": json.dumps({"ok": False, "message": "Id is required."}),
+        }
 
     try:
         dynamodb = boto3.resource("dynamodb")
@@ -36,6 +40,14 @@ def lambda_handler(event, context):
         print(f"registered item: {item}")
     except Exception as e:
         print(e)
-        return {"ok": False, "message": "Failed to register item."}
+        return {
+            "isBase64Encoded": False,
+            "statusCode": 500,
+            "body": json.dumps({"ok": False, "message": "Failed to register item."}),
+        }
 
-    return {"ok": True, "message": "Successfully registered!"}
+    return {
+        "isBase64Encoded": False,
+        "statusCode": 201,
+        "body": json.dumps({"ok": True, "message": "Successfully registered!"}),
+    }
