@@ -1,4 +1,6 @@
 import os
+import json
+
 import boto3
 
 
@@ -9,8 +11,9 @@ def lambda_handler(event, context):
     id = path_params.get("id") if path_params else ""
     if not id:
         return {
-            "ok": False,
-            "message": "Id is required."
+            "isBase64Encoded": False,
+            "statusCode": 400,
+            "body": json.dumps({"ok": False, "message": "Id is required."}),
         }
 
     try:
@@ -21,11 +24,13 @@ def lambda_handler(event, context):
     except Exception as e:
         print(e)
         return {
-            "ok": False,
-            "message": "Failed to delete item."
+            "isBase64Encoded": False,
+            "statusCode": 500,
+            "body": json.dumps({"ok": False, "message": "Failed to delete item."}),
         }
 
     return {
-        "ok": True,
-        "message": "Successfully deleted.",
+        "isBase64Encoded": False,
+        "statusCode": 204,
+        "body": json.dumps({"ok": True, "message": "Successfully deleted."}),
     }
