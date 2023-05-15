@@ -166,3 +166,17 @@ resource "aws_lambda_permission" "invoke_register_item_permission" {
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/items"
 }
+
+resource "aws_lambda_permission" "invoke_get_items_permission" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.get_items.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/items"
+}
+
+resource "aws_lambda_permission" "invoke_delete_item_permission" {
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.delete_item.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.api.execution_arn}/*/*/items/{id}"
+}
