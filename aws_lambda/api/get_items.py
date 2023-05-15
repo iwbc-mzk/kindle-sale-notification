@@ -1,5 +1,14 @@
 import os
+import json
+from decimal import Decimal
+
 import boto3
+
+
+def decimal_default_proc(obj):
+    if isinstance(obj, Decimal):
+        return int(obj)
+    raise TypeError
 
 
 def lambda_handler(event, context):
@@ -20,12 +29,19 @@ def lambda_handler(event, context):
     except Exception as e:
         print(e)
         return {
-            "ok": False,
-            "message": "Failed to fetch items."
+            "isBase64Encoded": False,
+            "statusCode": 500,
+            "body": json.dumps({"ok": False, "message": "Failed to fetch items."}),
         }
 
     return {
-        "ok": True,
-        "message": "Successfully fetch items.",
-        "items": items
+        "isBase64Encoded": False,
+        "statusCode": 200,
+        "body": json.dumps(
+            {
+                "ok": True,
+                "message": "Successfully fetch items.",
+                "body": {"items": json.dumps(items, default=decimal_default_proc)},
+            }
+        ),
     }

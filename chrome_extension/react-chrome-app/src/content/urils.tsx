@@ -1,7 +1,7 @@
 import aws from 'aws-sdk';
 
 import { EnvVariables, ProductInfo, LambdaResponse } from '../types';
-import { registerItem } from './api';
+import api from './api';
 
 export const isKindleUnlimited = (): boolean => {
     const xpath =
@@ -143,7 +143,21 @@ export const createAwsCredentialsFromEnv = () => {
 export const register = async (
     productInfo: ProductInfo
 ): Promise<LambdaResponse> => {
-    const res = await registerItem(JSON.stringify(productInfo));
+    const res = await api.postItem(JSON.stringify(productInfo));
+    const resJson = await res.json();
+
+    return resJson;
+};
+
+export const fetchItems = async (id?: string): Promise<LambdaResponse> => {
+    const res = await api.getItems(id);
+    const resJson = await res.json();
+
+    return resJson;
+};
+
+export const unregister = async (id: string): Promise<LambdaResponse> => {
+    const res = await api.deleteItem(id);
     const resJson = await res.json();
 
     return resJson;

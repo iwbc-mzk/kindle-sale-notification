@@ -7,7 +7,7 @@ import { getEnvVariables, createAwsCredentialsFromEnv } from './urils';
 const apiRequest = async (
     method: string,
     path: string,
-    body: string
+    body?: string
 ): Promise<Response> => {
     const env = getEnvVariables();
     const endpoint = env.awsApiEndpoint;
@@ -25,23 +25,43 @@ const apiRequest = async (
         credentials: credentials,
     });
 
-    const req = await signer.sign(
-        new HttpRequest({
-            method: method,
-            protocol: 'https',
-            path: path,
-            hostname: hostname,
-            headers: {
-                host: hostname,
-            },
-            body: body,
-        })
-    );
+    const httpReq = new HttpRequest({
+        method: method,
+        protocol: 'https',
+        path: path,
+        hostname: hostname,
+        headers: {
+            host: hostname,
+        },
+    });
+    if (body) {
+        httpReq.body = body;
+    }
+
+    const req = await signer.sign(httpReq);
     console.log(req);
 
     return fetch(url, { ...req });
 };
 
-export const registerItem = async (body: string): Promise<Response> => {
+export const postItem = async (body: string): Promise<Response> => {
     return apiRequest('POST', '/items', body);
+};
+
+export const getItems = async (id?: string): Promise<Response> => {
+    if (id) {
+        return apiRequest('GET', `/items${id}`);
+    } else {
+        return apiRequest('GET', '/items');
+    }
+};
+
+export const deleteItem = async (id: string): Promise<Response> => {
+    return apiRequest('DELETE', `/items/${id}`);
+};
+
+export default {
+    postItem,
+    getItems,
+    deleteItem,
 };

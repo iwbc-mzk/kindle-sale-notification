@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@mui/material';
 import Popover from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
 
 import { productInfoListener, registerListener } from './listener';
+import { ProductInfo } from '../types';
 import {
     getProductId,
     getProductTitle,
@@ -11,7 +12,10 @@ import {
     getProductPoint,
     getProductUrl,
     register,
+    unregister,
+    fetchItems,
 } from './urils';
+import { SESSION_STORAGE_ID_KEY as idsKey } from '../const';
 
 const RegisterButton = styled(Button)({
     margin: '10px 0px',
@@ -25,9 +29,14 @@ const RegisterButton = styled(Button)({
     color: '#0F1111',
 });
 
+const UnregisterButton = styled(RegisterButton)({
+    // backgroundColor: 'black',
+});
+
 function App() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [registeredIds, setRegisteredIds] = useState<string[]>([]);
 
     const id = getProductId();
     const title = getProductTitle();
@@ -36,6 +45,25 @@ function App() {
     const url = getProductUrl();
 
     const isPopoverOpen = Boolean(anchorEl);
+    const isRegistered = registeredIds.includes(id);
+
+    useEffect(() => {
+        if (!sessionStorage.getItem(idsKey)) {
+            fetchItems().then((res) => {
+                if (res.body) {
+                    const items_str = res.body?.items ?? '';
+                    const items: ProductInfo[] = JSON.parse(items_str);
+                    const ids = items.map((item) => item.id);
+                    setRegisteredIds(ids);
+                    sessionStorage.setItem(idsKey, JSON.stringify(ids));
+                }
+            });
+        } else {
+            const _ids = sessionStorage.getItem(idsKey) ?? '';
+            const ids = JSON.parse(_ids);
+            setRegisteredIds(ids);
+        }
+    }, []);
 
     const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
         setAnchorEl(event.currentTarget);
@@ -48,11 +76,16 @@ function App() {
     const registerProduct = async () => {
         setIsLoading(true);
 
+        // 登録前にポップオーバーを消しておかないと、登録後にスクロールバーが消える
+        handlePopoverClose();
+
         const productInfo = { id, title, price, point, url };
         const resJson = await register(productInfo);
-        console.log(resJson);
 
         if (resJson.ok) {
+            const newIds = [id, ...registeredIds];
+            setRegisteredIds(newIds);
+            sessionStorage.setItem(idsKey, JSON.stringify(newIds));
             alert(`Register Seccess!\n${JSON.stringify(productInfo)}`);
         } else {
             alert(`Register Faild.\n${resJson.message}`);
@@ -60,16 +93,41 @@ function App() {
         setIsLoading(false);
     };
 
+    const unregisterProduct = async () => {
+        setIsLoading(true);
+
+        const resJson = await unregister(id);
+        if (resJson.ok) {
+            const newIds = registeredIds.filter((n) => n != id);
+            setRegisteredIds(newIds);
+            sessionStorage.setItem(idsKey, JSON.stringify(newIds));
+            alert('Unregister Seccess!');
+        } else {
+            alert('Unregister Faild.');
+        }
+
+        setIsLoading(false);
+    };
+
     return (
         <div>
-            <RegisterButton
-                onClick={() => registerProduct()}
-                onMouseEnter={handlePopoverOpen}
-                onMouseLeave={handlePopoverClose}
-                disabled={isLoading}
-            >
-                セール時に通知
-            </RegisterButton>
+            {isRegistered ? (
+                <UnregisterButton
+                    onClick={() => unregisterProduct()}
+                    disabled={isLoading}
+                >
+                    通知解除
+                </UnregisterButton>
+            ) : (
+                <RegisterButton
+                    onClick={() => registerProduct()}
+                    onMouseEnter={handlePopoverOpen}
+                    onMouseLeave={handlePopoverClose}
+                    disabled={isLoading}
+                >
+                    セール時に通知
+                </RegisterButton>
+            )}
             <Popover
                 sx={{
                     pointerEvents: 'none',

@@ -1,7 +1,11 @@
 export type LambdaResponse = {
     ok: boolean;
     message: string;
-    body: unknown;
+    body?: LambdaResponseBody;
+};
+
+export type LambdaResponseBody = {
+    items?: string;
 };
 
 export type ProductInfoMessage = {
