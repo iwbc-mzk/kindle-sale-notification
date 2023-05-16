@@ -47,7 +47,8 @@ function App() {
     const isPopoverOpen = Boolean(anchorEl);
     const isRegistered = registeredIds.includes(id);
 
-    // 他コンテキストでの変更を反映
+    // 他コンテキストでの変更を含む、登録済IDの変更を反映する
+    // 自身でのストレージ登録時も実行されるので、不必要なState変更をしないように注意
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'sync') {
             if (changes?.ids) {
@@ -65,7 +66,6 @@ function App() {
                         const items_str = res.body?.items ?? '';
                         const items: ProductInfo[] = JSON.parse(items_str);
                         const ids = items.map((item) => item.id);
-                        setRegisteredIds(ids);
                         chrome.storage.sync.set({ [ID_STORAGE_KEY]: ids });
                     }
                 });
@@ -94,7 +94,6 @@ function App() {
 
         if (resJson.ok) {
             const newIds = [id, ...registeredIds];
-            setRegisteredIds(newIds);
             chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds }).then(() => {
                 alert(`Register Seccess!\n${JSON.stringify(productInfo)}`);
             });
@@ -110,7 +109,6 @@ function App() {
         const resJson = await unregister(id);
         if (resJson.ok) {
             const newIds = registeredIds.filter((n) => n != id);
-            setRegisteredIds(newIds);
             chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds });
             alert('Unregister Seccess!');
         } else {
