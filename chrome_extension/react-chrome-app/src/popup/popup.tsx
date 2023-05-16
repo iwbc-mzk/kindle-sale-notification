@@ -11,13 +11,28 @@ import {
     ProductInfoResponse,
     RegisterMessage,
     RegisterResponse,
+    UnregisterMessage,
+    UnregisterResponse,
 } from '../types';
-import { MESSAGE_TYPES } from '../const';
+import { MESSAGE_TYPES, ID_STORAGE_KEY } from '../const';
 import { sleep } from '../utils';
 
 const RegisterButton = styled(Button)({
     boxShadow: 'none',
     margin: '10px 0px',
+    backgroundColor: 'rgba(42, 64, 115, 0.9)',
+    '&:hover': {
+        backgroundColor: 'rgba(42, 64, 115, 1)',
+    },
+});
+
+const UnregisterButton = styled(RegisterButton)({
+    outline: '3px solid rgba(42, 64, 115, 1)',
+    backgroundColor: 'white',
+    color: 'rgba(42, 64, 115, 1)',
+    '&:hover': {
+        backgroundColor: 'rgba(42, 64, 115, 0.1)',
+    },
 });
 
 const sendMessageToActiveTab = (
@@ -44,11 +59,18 @@ const Popup = () => {
     const [url, setUrl] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [tooltipTitle, setTooltipTitle] = useState<string>('');
+    const [registeredIds, setRegisteredIds] = useState<string[]>([]);
 
     const isTooltipOpen = Boolean(tooltipTitle);
+    const isRegistered = registeredIds.includes(id);
 
     useEffect(() => {
         setProductInfo();
+        chrome.storage.sync.get([ID_STORAGE_KEY]).then((result) => {
+            if (result?.ids) {
+                setRegisteredIds(result.ids as string[]);
+            }
+        });
     }, []);
 
     const setProductInfo = () => {
@@ -78,6 +100,35 @@ const Popup = () => {
             setIsLoading(false);
 
             const { ok } = response;
+            if (ok) {
+                const newIds = [id, ...registeredIds];
+                setRegisteredIds(newIds);
+                chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds });
+            }
+            const msg = ok ? 'Success!!' : 'Failed';
+            setTooltipTitle(msg);
+            sleep(5000).then(() => setTooltipTitle(''));
+        };
+
+        sendMessageToActiveTab(message, callback);
+    };
+
+    const sendUnregisterMessage = () => {
+        setIsLoading(true);
+
+        const message: UnregisterMessage = {
+            type: MESSAGE_TYPES.UnregisterMessage,
+            id,
+        };
+        const callback = (response: UnregisterResponse) => {
+            setIsLoading(false);
+
+            const { ok } = response;
+            if (ok) {
+                const newIds = registeredIds.filter((v) => v != id);
+                setRegisteredIds(newIds);
+                chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds });
+            }
             const msg = ok ? 'Success!!' : 'Failed';
             setTooltipTitle(msg);
             sleep(5000).then(() => setTooltipTitle(''));
@@ -151,14 +202,25 @@ const Popup = () => {
                 disableHoverListener
                 disableTouchListener
             >
-                <RegisterButton
-                    variant="contained"
-                    disabled={!isIdEntered() || isLoading}
-                    onClick={() => sendRegisterMessage()}
-                    fullWidth
-                >
-                    登録
-                </RegisterButton>
+                {isRegistered ? (
+                    <UnregisterButton
+                        variant="contained"
+                        disabled={!isIdEntered() || isLoading}
+                        onClick={() => sendUnregisterMessage()}
+                        fullWidth
+                    >
+                        通知解除
+                    </UnregisterButton>
+                ) : (
+                    <RegisterButton
+                        variant="contained"
+                        disabled={!isIdEntered() || isLoading}
+                        onClick={() => sendRegisterMessage()}
+                        fullWidth
+                    >
+                        登録{sessionStorage.getItem('ids') && 'aaaa'}
+                    </RegisterButton>
+                )}
             </Tooltip>
         </div>
     );

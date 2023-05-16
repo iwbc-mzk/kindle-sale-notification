@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import Popover from '@mui/material/Popover';
 import { styled } from '@mui/material/styles';
 
-import { productInfoListener, registerListener } from './listener';
+import { listener } from './listener';
 import { ProductInfo } from '../types';
 import {
     getProductId,
@@ -15,7 +15,7 @@ import {
     unregister,
     fetchItems,
 } from './urils';
-import { SESSION_STORAGE_ID_KEY as idsKey } from '../const';
+import { ID_STORAGE_KEY } from '../const';
 
 const RegisterButton = styled(Button)({
     margin: '10px 0px',
@@ -48,7 +48,7 @@ function App() {
     const isRegistered = registeredIds.includes(id);
 
     useEffect(() => {
-        chrome.storage.sync.get([idsKey]).then((result) => {
+        chrome.storage.sync.get([ID_STORAGE_KEY]).then((result) => {
             if (!result?.ids) {
                 fetchItems().then((res) => {
                     if (res.body) {
@@ -56,8 +56,7 @@ function App() {
                         const items: ProductInfo[] = JSON.parse(items_str);
                         const ids = items.map((item) => item.id);
                         setRegisteredIds(ids);
-                        chrome.storage.sync
-                            .set({ [idsKey]: ids })
+                        chrome.storage.sync.set({ [ID_STORAGE_KEY]: ids });
                     }
                 });
             } else {
@@ -86,7 +85,7 @@ function App() {
         if (resJson.ok) {
             const newIds = [id, ...registeredIds];
             setRegisteredIds(newIds);
-            chrome.storage.sync.set({ [idsKey]: newIds }).then(() => {
+            chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds }).then(() => {
                 alert(`Register Seccess!\n${JSON.stringify(productInfo)}`);
             });
         } else {
@@ -102,7 +101,7 @@ function App() {
         if (resJson.ok) {
             const newIds = registeredIds.filter((n) => n != id);
             setRegisteredIds(newIds);
-            chrome.storage.sync.set({[idsKey]: newIds})
+            chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds });
             alert('Unregister Seccess!');
         } else {
             alert('Unregister Faild.');
@@ -164,7 +163,6 @@ function App() {
     );
 }
 
-chrome.runtime.onMessage.addListener(productInfoListener);
-chrome.runtime.onMessage.addListener(registerListener);
+chrome.runtime.onMessage.addListener(listener);
 
 export default App;

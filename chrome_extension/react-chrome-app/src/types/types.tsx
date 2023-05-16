@@ -23,6 +23,13 @@ export type RegisterMessage = {
 
 export type RegisterResponse = LambdaResponse;
 
+export type UnregisterMessage = {
+    type: string;
+    id: string;
+};
+
+export type UnregisterResponse = LambdaResponse;
+
 export type ProductInfo = {
     id: string;
     title: string;
