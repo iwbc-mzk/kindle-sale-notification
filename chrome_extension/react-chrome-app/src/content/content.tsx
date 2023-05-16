@@ -48,21 +48,22 @@ function App() {
     const isRegistered = registeredIds.includes(id);
 
     useEffect(() => {
-        if (!sessionStorage.getItem(idsKey)) {
-            fetchItems().then((res) => {
-                if (res.body) {
-                    const items_str = res.body?.items ?? '';
-                    const items: ProductInfo[] = JSON.parse(items_str);
-                    const ids = items.map((item) => item.id);
-                    setRegisteredIds(ids);
-                    sessionStorage.setItem(idsKey, JSON.stringify(ids));
-                }
-            });
-        } else {
-            const _ids = sessionStorage.getItem(idsKey) ?? '';
-            const ids = JSON.parse(_ids);
-            setRegisteredIds(ids);
-        }
+        chrome.storage.sync.get([idsKey]).then((result) => {
+            if (!result?.ids) {
+                fetchItems().then((res) => {
+                    if (res.body) {
+                        const items_str = res.body?.items ?? '';
+                        const items: ProductInfo[] = JSON.parse(items_str);
+                        const ids = items.map((item) => item.id);
+                        setRegisteredIds(ids);
+                        chrome.storage.sync
+                            .set({ [idsKey]: ids })
+                    }
+                });
+            } else {
+                setRegisteredIds(result.ids as string[]);
+            }
+        });
     }, []);
 
     const handlePopoverOpen = (event: React.MouseEvent<HTMLElement>) => {
@@ -85,8 +86,9 @@ function App() {
         if (resJson.ok) {
             const newIds = [id, ...registeredIds];
             setRegisteredIds(newIds);
-            sessionStorage.setItem(idsKey, JSON.stringify(newIds));
-            alert(`Register Seccess!\n${JSON.stringify(productInfo)}`);
+            chrome.storage.sync.set({ [idsKey]: newIds }).then(() => {
+                alert(`Register Seccess!\n${JSON.stringify(productInfo)}`);
+            });
         } else {
             alert(`Register Faild.\n${resJson.message}`);
         }
@@ -100,7 +102,7 @@ function App() {
         if (resJson.ok) {
             const newIds = registeredIds.filter((n) => n != id);
             setRegisteredIds(newIds);
-            sessionStorage.setItem(idsKey, JSON.stringify(newIds));
+            chrome.storage.sync.set({[idsKey]: newIds})
             alert('Unregister Seccess!');
         } else {
             alert('Unregister Faild.');
