@@ -47,6 +47,16 @@ function App() {
     const isPopoverOpen = Boolean(anchorEl);
     const isRegistered = registeredIds.includes(id);
 
+    // 他コンテキストでの変更を反映
+    chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'sync') {
+            if (changes?.ids) {
+                const newIds: string[] = changes.ids.newValue;
+                setRegisteredIds(newIds);
+            }
+        }
+    });
+
     useEffect(() => {
         chrome.storage.sync.get([ID_STORAGE_KEY]).then((result) => {
             if (!result?.ids) {
