@@ -146,3 +146,4 @@ terraform/*.tfstate*
 # production
 /chrome_extension/extension/content.js*
 /chrome_extension/extension/popup.js*
+/chrome_extension/extension/service_worker.js*

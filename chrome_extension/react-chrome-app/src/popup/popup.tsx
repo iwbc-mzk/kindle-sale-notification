@@ -66,7 +66,7 @@ const Popup = () => {
 
     useEffect(() => {
         setProductInfo();
-        chrome.storage.sync.get([ID_STORAGE_KEY]).then((result) => {
+        chrome.storage.session.get([ID_STORAGE_KEY]).then((result) => {
             if (result?.ids) {
                 setRegisteredIds(result.ids as string[]);
             }
@@ -103,7 +103,7 @@ const Popup = () => {
             if (ok) {
                 const newIds = [id, ...registeredIds];
                 setRegisteredIds(newIds);
-                chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds });
+                chrome.storage.session.set({ [ID_STORAGE_KEY]: newIds });
             }
             const msg = ok ? 'Success!!' : 'Failed';
             setTooltipTitle(msg);
@@ -127,7 +127,7 @@ const Popup = () => {
             if (ok) {
                 const newIds = registeredIds.filter((v) => v != id);
                 setRegisteredIds(newIds);
-                chrome.storage.sync.set({ [ID_STORAGE_KEY]: newIds });
+                chrome.storage.session.set({ [ID_STORAGE_KEY]: newIds });
             }
             const msg = ok ? 'Success!!' : 'Failed';
             setTooltipTitle(msg);

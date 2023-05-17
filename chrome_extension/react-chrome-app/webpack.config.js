@@ -8,6 +8,7 @@ module.exports = {
     entry: {
         content: "./src/content/index.tsx",
         popup: "./src/popup/index.tsx",
+        service_worker: "./src/service_worker/service_worker.tsx",
     },
     mode: "production",
     module: {
