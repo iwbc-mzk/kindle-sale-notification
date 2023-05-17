@@ -72,8 +72,8 @@ resource "aws_lambda_function" "price_checker" {
   package_type  = "Image"
 
   source_code_hash = base64sha256("${join("", [for f in fileset(".", "${local.lambda_dir}/price_checker/*") : filesha1(f)])}${join("", [for f in fileset(".", "${local.lambda_dir}/image_base/*") : filesha1(f)])}")
-  memory_size      = 1024
-  timeout          = 60
+  memory_size      = 1536
+  timeout          = 30
 
   environment {
     variables = {
