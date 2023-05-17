@@ -143,9 +143,6 @@ const Popup = () => {
 
     return (
         <div style={{ width: '300px' }}>
-            <header>
-                <h5>Kindle Sale Notification</h5>
-            </header>
             <div>
                 <TextField
                     label="Id"
