@@ -31,6 +31,6 @@ def lambda_handler(event, context):
 
     return {
         "isBase64Encoded": False,
-        "statusCode": 204,
+        "statusCode": 200,
         "body": json.dumps({"ok": True, "message": "Successfully deleted."}),
     }
