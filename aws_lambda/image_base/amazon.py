@@ -1,18 +1,18 @@
 import re
 from urllib import robotparser, parse
 
-from selenium import webdriver
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
+from selenium.common.exceptions import NoSuchElementException
 
 
 class AmazonScraper:
-    def __init__(self) -> None:
+    def __init__(self, wb: WebDriver) -> None:
         self._base_url = "https://www.amazon.co.jp"
         self._user_agent = "*"
 
-        self._prepare_webdriver()
+        self._webdriver = wb
+
         self._prepare_robots()
 
     def _prepare_robots(self) -> None:
@@ -20,23 +20,6 @@ class AmazonScraper:
         robots_url = parse.urljoin(self._base_url, "robots.txt")
         self._robots.set_url(robots_url)
         self._robots.read()
-
-    def _prepare_webdriver(self) -> None:
-        options = Options()
-        options.binary_location = "/opt/chrome-linux/chrome"
-        options.add_argument("--headless")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--single-process")
-        options.add_argument("--disable-dev-shm-usage")
-
-        service = Service(executable_path="/opt/chromedriver")
-
-        self._webdriver = webdriver.Chrome(service=service, options=options)
-
-        self._webdriver.execute_script(
-            "const newProto = navigator.__proto__;delete newProto.webdriver;navigator.__proto__ = newProto;"
-        )
-        assert self._webdriver.execute_script("return navigator.webdriver") is None
 
     def fetch(self, url: str) -> None:
         if not self._robots.can_fetch(self._user_agent, url):
@@ -52,7 +35,6 @@ class AmazonScraper:
         kindle_swatch_element = self._webdriver.find_elements(
             by=By.CSS_SELECTOR, value=swatch_selector
         )[0]
-
         price_element, point_element, *_ = kindle_swatch_element.find_elements(
             by=By.CLASS_NAME, value="a-color-price"
         )
@@ -60,7 +42,12 @@ class AmazonScraper:
         return price_element, point_element
 
     def get_price(self) -> int:
-        price_element, _ = self._get_price_point_element()
+        try:
+            price_element, _ = self._get_price_point_element()
+        except NoSuchElementException as e:
+            print(e)
+            return -1
+
         text = price_element.text
 
         yen_unit = "￥"
@@ -70,7 +57,12 @@ class AmazonScraper:
         return price if price else -1
 
     def get_point(self) -> int:
-        _, point_element = self._get_price_point_element()
+        try:
+            _, point_element = self._get_price_point_element()
+        except NoSuchElementException as e:
+            print(e)
+            return -1
+
         text = point_element.text
 
         pt_unit = "pt"
@@ -81,9 +73,15 @@ class AmazonScraper:
 
     def get_title(self) -> str:
         title_selector = "#productTitle"
-        title_element = self._webdriver.find_element(
-            by=By.CSS_SELECTOR, value=title_selector
-        )
+
+        try:
+            title_element = self._webdriver.find_element(
+                by=By.CSS_SELECTOR, value=title_selector
+            )
+        except NoSuchElementException as e:
+            print(e)
+            return ""
+
         title = title_element.text
 
         return title if title else ""

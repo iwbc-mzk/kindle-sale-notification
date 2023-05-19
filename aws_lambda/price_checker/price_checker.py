@@ -1,9 +1,61 @@
 import json
 import os
 from datetime import datetime
+from contextlib import contextmanager
 
-from amazon import AmazonScraper
 import boto3
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+
+try:
+    from amazon import AmazonScraper
+except ImportError:
+    from aws_lambda.image_base.amazon import AmazonScraper
+
+
+CHROMIUM_PATH = "/opt/chrome-linux/chrome"
+CHROME_DRIVER_PATH = "/opt/chromedriver"
+
+
+@contextmanager
+def init_chrome_webdriver(response) -> webdriver.Chrome:
+    options = Options()
+    options.binary_location = CHROMIUM_PATH
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--single-process")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--user-data-dir=/tmp/user_data")
+    # AWS Lambdaがインスタンスを再利用する関係上、下記オプションがないとゾンビプロセスが発生する
+    options.add_argument("--no-zygote")
+
+    service = Service(executable_path=CHROME_DRIVER_PATH)
+
+    with webdriver.Chrome(service=service, options=options) as wd:
+        wd.implicitly_wait(2)
+        wd.set_page_load_timeout(10)
+        wd.set_script_timeout(5)
+
+        # 初期プロファイルの作成
+        if not os.path.exists("/tmp/user_data/Default/Session Storage"):
+            wd.get("https://google.co.jp")
+
+        assert os.path.exists("/tmp/user_data/Default/") is True
+
+        wd.execute_script(
+            "const newProto = navigator.__proto__;delete newProto.webdriver;navigator.__proto__ = newProto;"
+        )
+        assert wd.execute_script("return navigator.webdriver") is None
+
+        try:
+            yield wd
+        except Exception as e:
+            print(e)
+            print("Failed process.")
+        finally:
+            return response
 
 
 def lambda_handler(event, context):
@@ -17,30 +69,40 @@ def lambda_handler(event, context):
     messages = queue.receive_messages(MaxNumberOfMessages=1)
     if not messages:
         print("No messages.")
-        return
+        response["ApproximateNumberOfMessages"] = 0
+        return response
 
     message = messages[0]
-    item = json.loads(message.body)
+    item: dict = json.loads(message.body)
     id = item.get("id")
     if not id:
         print("No item id.")
+        response["ApproximateNumberOfMessages"] -= 1
         return response
 
-    sc = AmazonScraper()
-    url = sc.get_url(id)
-    values = {**item}
-    for _ in range(2):
-        try:
-            sc.fetch(url)
-            values["title"] = sc.get_title()
-            values["price"] = sc.get_price()
-            values["point"] = sc.get_point()
+    print("id:", id)
+
+    with init_chrome_webdriver(response) as wd:
+        sc = AmazonScraper(wd)
+
+        values = {**item}
+        url = sc.get_url(id)
+        if url:
             values["url"] = url
-        except Exception as e:
-            print(e)
-            continue
-        else:
-            break
+
+        sc.fetch(url)
+
+        params = [
+            ("title", sc.get_title),
+            ("price", sc.get_price),
+            ("point", sc.get_point),
+        ]
+        for key, f in params:
+            v = f()
+            if type(v) == str and v:
+                values[key] = v
+            elif type(v) == int and v >= 0:
+                values[key] = v
 
     need_update = False
     updated_item = item.copy()

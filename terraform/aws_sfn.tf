@@ -97,20 +97,17 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
             "price check": {
                 "Type": "Task",
                 "Resource": "${aws_lambda_function.price_checker.arn}",
-                "Retry": [
+                "Next": "Wait Interval",
+                "Catch": [
                     {
                         "ErrorEquals": [
-                            "Lambda.ServiceException",
-                            "Lambda.AWSLambdaException",
-                            "Lambda.SdkClientException",
-                            "Lambda.TooManyRequestsException"
+                            "Lambda.Unknown",
+                            "WebDriverException"
                         ],
-                        "IntervalSeconds": 2,
-                        "MaxAttempts": 6,
-                        "BackoffRate": 2
+                        "Next": "Wait Interval",
+                        "ResultPath": null
                     }
-                ],
-                "Next": "Wait Interval"
+                ]
             },
             "Wait Interval": {
                 "Type": "Wait",
