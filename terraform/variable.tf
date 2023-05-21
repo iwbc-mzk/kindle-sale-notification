@@ -3,3 +3,9 @@ variable "aws_region" {
   nullable = false
   default  = "ap-northeast-1"
 }
+
+variable "email" {
+  type     = list(string)
+  nullable = false
+  default  = []
+}
