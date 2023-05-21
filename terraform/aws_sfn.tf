@@ -28,6 +28,11 @@ resource "aws_sfn_state_machine" "ksn_state_machine" {
                         "BackoffRate": 2
                     }
                 ],
+                "Next": "Wait Queue"
+            },
+            "Wait Queue": {
+                "Type": "Wait",
+                "Seconds": 3,
                 "Next": "Get Number Of Messages"
             },
             "Get Number Of Messages": {
