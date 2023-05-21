@@ -1,6 +1,12 @@
-# topic
+# -----------------------------------------------------------------
+# SNS Topic
+# -----------------------------------------------------------------
 resource "aws_sns_topic" "kindle_sale_notification" {
   name = "kindle_sale_notification"
+}
+
+resource "aws_sns_topic" "kindle_sale_notification_error" {
+  name = "kindle_sale_notification_error"
 }
 
 # subscription
