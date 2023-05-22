@@ -137,6 +137,8 @@ terraform/*hcl
 terraform/.terraform
 terraform/*.tfstate*
 
+.$architecture.drawio.bkp
+
 # ----------------------------
 # google extension
 #-----------------------------
