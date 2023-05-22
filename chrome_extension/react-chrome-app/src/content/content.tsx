@@ -49,17 +49,21 @@ function App() {
 
     // 他コンテキストでの変更を含む、登録済IDの変更を反映する
     // 自身でのストレージ登録時も実行されるので、不必要なState変更をしないように注意
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === 'session') {
-            if (changes?.[ID_STORAGE_KEY]) {
-                const newItems: ProductInfo[] =
-                    changes[ID_STORAGE_KEY].newValue;
-                setRegisteredItems(newItems);
+    const addSessionStorageListener = () => {
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area === 'session') {
+                if (changes?.[ID_STORAGE_KEY]) {
+                    const newItems: ProductInfo[] =
+                        changes[ID_STORAGE_KEY].newValue;
+                    setRegisteredItems(newItems);
+                }
             }
-        }
-    });
+        });
+    };
 
     useEffect(() => {
+        addSessionStorageListener();
+
         chrome.storage.session.get([ID_STORAGE_KEY]).then((result) => {
             if (!result?.[ID_STORAGE_KEY]) {
                 fetchItems().then((res) => {
