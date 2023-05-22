@@ -149,3 +149,4 @@ terraform/*.tfstate*
 /chrome_extension/extension/content.js*
 /chrome_extension/extension/popup.js*
 /chrome_extension/extension/service_worker.js*
+/chrome_extension/extension/list.js*

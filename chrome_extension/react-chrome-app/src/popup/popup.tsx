@@ -145,8 +145,20 @@ const Popup = () => {
         return id != null && id !== '';
     };
 
+    const onClickRegistered = () => {
+        window.open(chrome.runtime.getURL('list.html'));
+    };
+
     return (
         <div style={{ width: '300px' }}>
+            <div style={{ textAlign: 'right' }}>
+                <span
+                    style={{ color: '#1d3994', cursor: 'pointer' }}
+                    onClick={onClickRegistered}
+                >
+                    登録済一覧
+                </span>
+            </div>
             <div>
                 <TextField
                     label="Id"
