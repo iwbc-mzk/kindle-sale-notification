@@ -7,6 +7,7 @@ import Tooltip from '@mui/material/Tooltip';
 import { styled } from '@mui/material/styles';
 
 import {
+    ProductInfo,
     ProductInfoMessage,
     ProductInfoResponse,
     RegisterMessage,
@@ -59,16 +60,16 @@ const Popup = () => {
     const [url, setUrl] = useState<string>('');
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [tooltipTitle, setTooltipTitle] = useState<string>('');
-    const [registeredIds, setRegisteredIds] = useState<string[]>([]);
+    const [registeredItems, setRegisteredItems] = useState<ProductInfo[]>([]);
 
     const isTooltipOpen = Boolean(tooltipTitle);
-    const isRegistered = registeredIds.includes(id);
+    const isRegistered = registeredItems.map((item) => item.id).includes(id);
 
     useEffect(() => {
         setProductInfo();
         chrome.storage.session.get([ID_STORAGE_KEY]).then((result) => {
-            if (result?.ids) {
-                setRegisteredIds(result.ids as string[]);
+            if (result?.[ID_STORAGE_KEY]) {
+                setRegisteredItems(result[ID_STORAGE_KEY] as ProductInfo[]);
             }
         });
     }, []);
@@ -92,18 +93,19 @@ const Popup = () => {
     const sendRegisterMessage = () => {
         setIsLoading(true);
 
+        const productInfo: ProductInfo = { id, title, price, point, url };
         const message: RegisterMessage = {
             type: MESSAGE_TYPES.RegisterMessage,
-            productInfo: { id, title, price, point, url },
+            productInfo,
         };
         const callback = (response: RegisterResponse) => {
             setIsLoading(false);
 
             const { ok } = response;
             if (ok) {
-                const newIds = [id, ...registeredIds];
-                setRegisteredIds(newIds);
-                chrome.storage.session.set({ [ID_STORAGE_KEY]: newIds });
+                const newItems = [productInfo, ...registeredItems];
+                setRegisteredItems(newItems);
+                chrome.storage.session.set({ [ID_STORAGE_KEY]: newItems });
             }
             const msg = ok ? 'Success!!' : 'Failed';
             setTooltipTitle(msg);
@@ -125,9 +127,11 @@ const Popup = () => {
 
             const { ok } = response;
             if (ok) {
-                const newIds = registeredIds.filter((v) => v != id);
-                setRegisteredIds(newIds);
-                chrome.storage.session.set({ [ID_STORAGE_KEY]: newIds });
+                const newItems = registeredItems.filter(
+                    (item) => item.id != id
+                );
+                setRegisteredItems(newItems);
+                chrome.storage.session.set({ [ID_STORAGE_KEY]: newItems });
             }
             const msg = ok ? 'Success!!' : 'Failed';
             setTooltipTitle(msg);
@@ -215,7 +219,7 @@ const Popup = () => {
                         onClick={() => sendRegisterMessage()}
                         fullWidth
                     >
-                        登録{sessionStorage.getItem('ids') && 'aaaa'}
+                        登録
                     </RegisterButton>
                 )}
             </Tooltip>

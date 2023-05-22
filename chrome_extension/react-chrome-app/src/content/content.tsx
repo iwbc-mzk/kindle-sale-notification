@@ -36,7 +36,7 @@ const UnregisterButton = styled(RegisterButton)({
 function App() {
     const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [registeredIds, setRegisteredIds] = useState<string[]>([]);
+    const [registeredItems, setRegisteredItems] = useState<ProductInfo[]>([]);
 
     const id = getProductId();
     const title = getProductTitle();
@@ -45,35 +45,34 @@ function App() {
     const url = getProductUrl();
 
     const isPopoverOpen = Boolean(anchorEl);
-    const isRegistered = registeredIds.includes(id);
+    const isRegistered = registeredItems.map((item) => item.id).includes(id);
 
     // 他コンテキストでの変更を含む、登録済IDの変更を反映する
     // 自身でのストレージ登録時も実行されるので、不必要なState変更をしないように注意
     chrome.storage.onChanged.addListener((changes, area) => {
         if (area === 'session') {
-            if (changes?.ids) {
-                const newIds: string[] = changes.ids.newValue;
-                setRegisteredIds(newIds);
+            if (changes?.[ID_STORAGE_KEY]) {
+                const newItems: ProductInfo[] =
+                    changes[ID_STORAGE_KEY].newValue;
+                setRegisteredItems(newItems);
             }
         }
     });
 
     useEffect(() => {
         chrome.storage.session.get([ID_STORAGE_KEY]).then((result) => {
-            if (!result?.ids) {
+            if (!result?.[ID_STORAGE_KEY]) {
                 fetchItems().then((res) => {
                     if (res.body) {
                         const items_str = res.body?.items ?? '';
                         const items: ProductInfo[] = JSON.parse(items_str);
-                        const ids = items.map((item) => item.id);
                         chrome.storage.session.set({
-                            [ID_STORAGE_KEY]: ids,
+                            [ID_STORAGE_KEY]: items,
                         });
-                        console.log('set ids from api');
                     }
                 });
             } else {
-                setRegisteredIds(result.ids as string[]);
+                setRegisteredItems(result[ID_STORAGE_KEY] as ProductInfo[]);
             }
         });
     }, []);
@@ -96,9 +95,9 @@ function App() {
         const resJson = await register(productInfo);
 
         if (resJson.ok) {
-            const newIds = [id, ...registeredIds];
+            const newItems = [productInfo, ...registeredItems];
             chrome.storage.session
-                .set({ [ID_STORAGE_KEY]: newIds })
+                .set({ [ID_STORAGE_KEY]: newItems })
                 .then(() => {
                     alert(`Register Seccess!\n${JSON.stringify(productInfo)}`);
                 });
@@ -113,8 +112,8 @@ function App() {
 
         const resJson = await unregister(id);
         if (resJson.ok) {
-            const newIds = registeredIds.filter((n) => n != id);
-            chrome.storage.session.set({ [ID_STORAGE_KEY]: newIds });
+            const newItems = registeredItems.filter((item) => item.id != id);
+            chrome.storage.session.set({ [ID_STORAGE_KEY]: newItems });
             alert('Unregister Seccess!');
         } else {
             alert('Unregister Faild.');
