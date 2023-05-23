@@ -6,6 +6,7 @@ import {
     RegisterResponse,
     UnregisterMessage,
     UnregisterResponse,
+    BaseMessage,
 } from '../types';
 import { MESSAGE_TYPES } from '../const';
 import {
@@ -16,6 +17,7 @@ import {
     getProductUrl,
     register,
     unregister,
+    isKindlePage,
 } from './urils';
 
 export const listener = (
@@ -32,6 +34,9 @@ export const listener = (
     }
     if (msg?.type === MESSAGE_TYPES.UnregisterMessage) {
         return unregisterListener(msg, sender, sendResponse);
+    }
+    if (msg?.type === MESSAGE_TYPES.KindlePageMessage) {
+        return kindlePageListener(msg, sender, sendResponse);
     }
 };
 
@@ -55,7 +60,6 @@ export const productInfoListener = (
     };
 
     const response: ProductInfoResponse = { productInfo };
-    console.log('response: ', response);
 
     sendResponse(response);
 };
@@ -65,8 +69,6 @@ export const registerListener = (
     sender: chrome.runtime.MessageSender,
     sendResponse: (Response: RegisterResponse) => void
 ) => {
-    console.log('message resieved.', msg);
-
     const { productInfo } = msg;
     register(productInfo).then((res) => {
         sendResponse(res as RegisterResponse);
@@ -82,8 +84,6 @@ export const unregisterListener = (
     sender: chrome.runtime.MessageSender,
     sendResponse: (Response: UnregisterResponse) => void
 ) => {
-    console.log('message resieved.', msg);
-
     const { id } = msg;
     unregister(id).then((res) => {
         sendResponse(res as UnregisterResponse);
@@ -92,6 +92,15 @@ export const unregisterListener = (
     // 非同期通信を行う場合はtrueを返し、メッセージ送信元に非同期通信することを知らせる必要がある。
     // https://developer.chrome.com/docs/extensions/mv3/messaging/#:~:text=In%20the%20above%20example%2C%20sendResponse()%20was%20called%20synchronously.%20If%20you%20want%20to%20asynchronously%20use%20sendResponse()%2C%20add%20return%20true%3B%20to%20the%20onMessage%20event%20handler.
     return true;
+};
+
+export const kindlePageListener = (
+    msg: BaseMessage,
+    sender: chrome.runtime.MessageSender,
+    sendResponse: (Response: boolean) => void
+) => {
+    const IsKindlePage = isKindlePage();
+    sendResponse(IsKindlePage);
 };
 
 export default listener;

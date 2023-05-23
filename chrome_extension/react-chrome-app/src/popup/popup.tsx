@@ -17,6 +17,7 @@ import {
 } from '../types';
 import { MESSAGE_TYPES, ID_STORAGE_KEY } from '../const';
 import { sleep } from '../utils';
+import { sendMessageToActiveTab } from './utils';
 
 const RegisterButton = styled(Button)({
     boxShadow: 'none',
@@ -35,22 +36,6 @@ const UnregisterButton = styled(RegisterButton)({
         backgroundColor: 'rgba(42, 64, 115, 0.1)',
     },
 });
-
-const sendMessageToActiveTab = (
-    message: any,
-    callback: (response: any) => void
-): void => {
-    chrome.tabs &&
-        chrome.tabs.query(
-            {
-                active: true,
-                currentWindow: true,
-            },
-            (tabs) => {
-                chrome.tabs.sendMessage(tabs[0].id || 0, message, callback);
-            }
-        );
-};
 
 const Popup = () => {
     const [id, setId] = useState<string>('');

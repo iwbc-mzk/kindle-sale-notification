@@ -8,23 +8,23 @@ export type LambdaResponseBody = {
     items?: string;
 };
 
-export type ProductInfoMessage = {
+export type BaseMessage = {
     type: string;
 };
+
+export type ProductInfoMessage = BaseMessage;
 
 export type ProductInfoResponse = {
     productInfo: ProductInfo;
 };
 
-export type RegisterMessage = {
-    type: string;
+export type RegisterMessage = BaseMessage & {
     productInfo: ProductInfo;
 };
 
 export type RegisterResponse = LambdaResponse;
 
-export type UnregisterMessage = {
-    type: string;
+export type UnregisterMessage = BaseMessage & {
     id: string;
 };
 

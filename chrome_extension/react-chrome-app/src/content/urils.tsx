@@ -1,6 +1,7 @@
 import aws from 'aws-sdk';
 
 import { EnvVariables, ProductInfo, LambdaResponse } from '../types';
+import { PERMITTED_HOST } from '../const';
 import api from './api';
 
 export const isKindleUnlimited = (): boolean => {
@@ -161,4 +162,24 @@ export const unregister = async (id: string): Promise<LambdaResponse> => {
     const resJson = await res.json();
 
     return resJson;
+};
+
+export const isKindlePage = (): boolean => {
+    const { hostname } = window.location;
+
+    // パンくずリストの1番目で判定
+    const xpath =
+        '//*[@id="wayfinding-breadcrumbs_container"]/div[1]/ul/li[1]/span/a';
+
+    const xPathResult = document.evaluate(
+        xpath,
+        document,
+        null,
+        XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
+        null
+    );
+    const breadclumbElement = xPathResult.snapshotItem(0);
+    const rawText = breadclumbElement?.firstChild?.nodeValue ?? '';
+
+    return hostname === PERMITTED_HOST && rawText.includes('Kindle');
 };
