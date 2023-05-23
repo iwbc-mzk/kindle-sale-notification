@@ -167,9 +167,7 @@ export const unregister = async (id: string): Promise<LambdaResponse> => {
 export const isKindlePage = (): boolean => {
     const { hostname } = window.location;
 
-    // パンくずリストの1番目で判定
-    const xpath =
-        '//*[@id="wayfinding-breadcrumbs_container"]/div[1]/ul/li[1]/span/a';
+    const xpath = '//*[@id="nav-subnav"]/a[1]/span';
 
     const xPathResult = document.evaluate(
         xpath,
@@ -178,8 +176,8 @@ export const isKindlePage = (): boolean => {
         XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,
         null
     );
-    const breadclumbElement = xPathResult.snapshotItem(0);
-    const rawText = breadclumbElement?.firstChild?.nodeValue ?? '';
+    const navElement = xPathResult.snapshotItem(0);
+    const rawText = navElement?.firstChild?.nodeValue ?? '';
 
     return hostname === PERMITTED_HOST && rawText.includes('Kindle');
 };
