@@ -8,8 +8,7 @@
     "content_scripts": [
         {
             "matches": [
-                "https://www.amazon.co.jp/*dp/*",
-                "https://www.amazon.co.jp/*gp/product/*"
+                "https://www.amazon.co.jp/*"
             ],
             "js": [
                 "content.js"

@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 
 import App from './content';
+import { isKindlePage } from './urils';
+import { MESSAGE_TYPES } from '../const';
 
 const rootElement = document.createElement('div');
 rootElement.id = 'register-button';
@@ -15,3 +17,8 @@ root.render(
         <App />
     </React.StrictMode>
 );
+
+chrome.runtime.sendMessage({
+    type: MESSAGE_TYPES.ChangeIconStateMessage,
+    state: isKindlePage(),
+});

@@ -30,6 +30,10 @@ export type UnregisterMessage = BaseMessage & {
 
 export type UnregisterResponse = LambdaResponse;
 
+export type ChangeIconStateMessage = BaseMessage & {
+    state: boolean;
+};
+
 export type ProductInfo = {
     id: string;
     title: string;

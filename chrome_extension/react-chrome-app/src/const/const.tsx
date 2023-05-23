@@ -3,6 +3,7 @@ export const MESSAGE_TYPES = {
     RegisterMessage: 'REGISTER_MESSAGE',
     UnregisterMessage: 'UNREGISTER_MESSAGE',
     KindlePageMessage: 'KINDLE_PAGE_MESSAGE',
+    ChangeIconStateMessage: 'CHANGE_ICON_STATE_MESSAGE'
 };
 
 export const ID_STORAGE_KEY = 'ids';
