@@ -1,17 +1,41 @@
 import { MESSAGE_TYPES } from '../const';
 import { ChangeIconStateMessage } from '../types';
+import { sendMessageToActiveTab } from '../utils';
+import { setInitAccessLevel, setIconDisabled, setIconEnabled } from './utils';
 
 chrome.runtime.onInstalled.addListener(() => {
     setInitAccessLevel();
+    setIconDisabled();
 
-    chrome.runtime.onMessage.addListener(changeIconStateListener);
-});
+    const callback = (response: boolean) => {
+        if (response ?? false) {
+            setIconEnabled();
+        } else {
+            setIconDisabled();
+        }
+    };
 
-const setInitAccessLevel = () => {
-    chrome.storage.session.setAccessLevel({
-        accessLevel: 'TRUSTED_AND_UNTRUSTED_CONTEXTS',
+    const changeIconStatus = async () => {
+        const message = { type: MESSAGE_TYPES.KindlePageMessage };
+        sendMessageToActiveTab(message)
+            .then(callback)
+            .catch(() => {
+                setIconDisabled();
+            });
+    };
+
+    // タブ切り替え時
+    chrome.tabs.onActivated.addListener(() => {
+        changeIconStatus();
     });
-};
+
+    // ページ更新時
+    chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+        if (tab.status === 'complete') {
+            changeIconStatus();
+        }
+    });
+});
 
 const changeIconStateListener = (
     msg: ChangeIconStateMessage,
@@ -24,14 +48,14 @@ const changeIconStateListener = (
     }
 
     if (state) {
-        chrome.action.setIcon({ path: chrome.runtime.getURL('icon128.png') });
+        setIconEnabled();
     } else {
-        chrome.action.setIcon({
-            path: chrome.runtime.getURL('icon128_not_active.png'),
-        });
+        setIconDisabled();
     }
 
     sendResponse();
 };
+
+chrome.runtime.onMessage.addListener(changeIconStateListener);
 
 export {};

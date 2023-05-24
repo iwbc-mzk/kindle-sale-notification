@@ -16,8 +16,7 @@ import {
     UnregisterResponse,
 } from '../types';
 import { MESSAGE_TYPES, ID_STORAGE_KEY } from '../const';
-import { sleep } from '../utils';
-import { sendMessageToActiveTab } from './utils';
+import { sleep, sendMessageToActiveTab } from '../utils';
 
 const RegisterButton = styled(Button)({
     boxShadow: 'none',

@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom/client';
 
 import App from './content';
 import { isKindlePage } from './urils';
-import { MESSAGE_TYPES } from '../const';
 
 if (isKindlePage()) {
     const rootElement = document.createElement('div');
@@ -19,8 +18,3 @@ if (isKindlePage()) {
         </React.StrictMode>
     );
 }
-
-chrome.runtime.sendMessage({
-    type: MESSAGE_TYPES.ChangeIconStateMessage,
-    state: isKindlePage(),
-});

@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import Popup from './popup';
 
-import { sendMessageToActiveTab } from './utils';
+import { sendMessageToActiveTab } from '../utils';
 import { BaseMessage } from '../types';
 import { MESSAGE_TYPES } from '../const';
 
