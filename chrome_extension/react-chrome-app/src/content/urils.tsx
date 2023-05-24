@@ -179,5 +179,9 @@ export const isKindlePage = (): boolean => {
     const navElement = xPathResult.snapshotItem(0);
     const rawText = navElement?.firstChild?.nodeValue ?? '';
 
-    return hostname === PERMITTED_HOST && rawText.includes('Kindle');
+    return (
+        hostname === PERMITTED_HOST &&
+        rawText.includes('Kindle') &&
+        !!getProductTitle()
+    );
 };
