@@ -28,4 +28,9 @@ const callback = (response: boolean) => {
     );
 };
 
-sendMessageToActiveTab(message, callback);
+sendMessageToActiveTab(message)
+    .then(callback)
+    .catch((err) => {
+        console.log(err);
+        callback(false);
+    });

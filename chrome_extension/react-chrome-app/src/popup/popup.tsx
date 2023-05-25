@@ -71,7 +71,9 @@ const Popup = () => {
             setUrl(url);
         };
 
-        sendMessageToActiveTab(message, callback);
+        sendMessageToActiveTab(message)
+            .then(callback)
+            .catch((err) => console.log(err));
     };
 
     const sendRegisterMessage = () => {
@@ -96,7 +98,9 @@ const Popup = () => {
             sleep(5000).then(() => setTooltipTitle(''));
         };
 
-        sendMessageToActiveTab(message, callback);
+        sendMessageToActiveTab(message)
+            .then(callback)
+            .catch((err) => console.log(err));
     };
 
     const sendUnregisterMessage = () => {
@@ -122,7 +126,9 @@ const Popup = () => {
             sleep(5000).then(() => setTooltipTitle(''));
         };
 
-        sendMessageToActiveTab(message, callback);
+        sendMessageToActiveTab(message)
+            .then(callback)
+            .catch((err) => console.log(err));
     };
 
     const isIdEntered = () => {
