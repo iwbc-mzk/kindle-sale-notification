@@ -8,15 +8,19 @@ chrome.runtime.onInstalled.addListener(() => {
 
     // タブ切り替え時
     chrome.tabs.onActivated.addListener((activeInfo) => {
-        changeIconStatus(activeInfo.tabId ?? 0).catch((err) =>
-            console.log(err)
-        );
+        changeIconStatus(activeInfo.tabId ?? 0).catch((err) => {
+            console.log(err);
+            setIconDisabled();
+        });
     });
 
     // ページ更新時
     chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
         if (changeInfo.status === 'complete') {
-            changeIconStatus(tab.id ?? 0).catch((err) => console.log(err));
+            changeIconStatus(tab.id ?? 0).catch((err) => {
+                console.log(err);
+                setIconDisabled();
+            });
         }
     });
 });
