@@ -79,6 +79,7 @@ resource "aws_lambda_function" "price_checker" {
     variables = {
       queue_url : aws_sqs_queue.ksn_queue.url,
       table_name : aws_dynamodb_table.ksn.name,
+      discount_rate : var.discount_rate
     }
   }
 

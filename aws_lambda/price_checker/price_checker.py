@@ -2,6 +2,7 @@ import json
 import os
 from datetime import datetime
 from contextlib import contextmanager
+from typing import Union
 
 import boto3
 from selenium import webdriver
@@ -58,10 +59,27 @@ def init_chrome_webdriver(response) -> webdriver.Chrome:
             return response
 
 
+def is_discounted(
+    item: dict, updated_item: dict, discoute_rate: Union[int, float]
+) -> bool:
+    """
+    discouinte_rate: 0以上1未満の時に値引き率、1以上の時は値引き額を指定する
+    """
+    item_actual_price = item["price"] - item["point"]
+    updated_item_actual_price = updated_item["price"] - updated_item["point"]
+    if 0 <= discoute_rate < 1:
+        return (
+            item_actual_price - updated_item_actual_price
+        ) / item_actual_price >= discoute_rate
+    else:
+        return item_actual_price - updated_item_actual_price >= discoute_rate
+
+
 def lambda_handler(event, context):
     response = {**event}
 
     queue_url = os.environ["queue_url"]
+    discount_rate = float(os.environ["discount_rate"])
 
     sqs = boto3.resource("sqs")
     queue = sqs.Queue(queue_url)
@@ -111,12 +129,9 @@ def lambda_handler(event, context):
             updated_item[key] = val
             need_update = True
 
-    # 前回より100円以上安くなった場合
-    is_discounted = (item.get("price") - item.get("point")) - (
-        updated_item.get("price") - updated_item.get("point")
-    ) >= 100
-    updated_item["discounted"] = "Y" if is_discounted else "N"
-    need_update |= is_discounted | is_discounted is not item.get("discounted")
+    discounted = is_discounted(item, updated_item, discount_rate)
+    updated_item["discounted"] = "Y" if discounted else "N"
+    need_update |= discounted | discounted is not item.get("discounted")
 
     updated_item["updated_at"] = int(datetime.now().timestamp())
 

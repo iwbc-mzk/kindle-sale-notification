@@ -21,3 +21,10 @@ variable "schedule_expression" {
   nullable = false
   default  = "cron(0 19 * * ? *)"
 }
+
+# 1未満の時に値引き率、1以上の時に値引き額
+variable "discount_rate" {
+  type     = number
+  nullable = false
+  default  = 0.20
+}
