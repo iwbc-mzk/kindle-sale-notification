@@ -8,7 +8,7 @@ import {
     GridRenderCellParams,
 } from '@mui/x-data-grid';
 
-import { ID_STORAGE_KEY } from '../const';
+import { ID_STORAGE_KEY, MESSAGE_TYPES } from '../const';
 import { ProductInfo } from '../types';
 
 const List = () => {
@@ -17,11 +17,16 @@ const List = () => {
     useEffect(() => {
         addSessionStorageListener();
 
-        chrome.storage.session.get([ID_STORAGE_KEY]).then((result) => {
-            if (result?.[ID_STORAGE_KEY]) {
-                setRegisteredItems(result[ID_STORAGE_KEY] as ProductInfo[]);
-            }
-        });
+        chrome.runtime
+            .sendMessage({ type: MESSAGE_TYPES.FetchItems })
+            .then((res) => {
+                if (res.ok && res.body) {
+                    if (res.body.items) {
+                        const items: ProductInfo[] = JSON.parse(res.body.items);
+                        setRegisteredItems(items);
+                    }
+                }
+            });
     }, []);
 
     const addSessionStorageListener = () => {
