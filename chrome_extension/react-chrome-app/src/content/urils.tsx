@@ -2,7 +2,7 @@ import aws from 'aws-sdk';
 
 import { EnvVariables, ProductInfo, LambdaResponse } from '../types';
 import { PERMITTED_HOST } from '../const';
-import api from './api';
+import api from '../api';
 
 export const isKindleUnlimited = (): boolean => {
     const xpath =

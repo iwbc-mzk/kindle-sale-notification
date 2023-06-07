@@ -1,6 +1,6 @@
 import { MESSAGE_TYPES } from '../const';
-import { ChangeIconStateMessage } from '../types';
 import { setInitAccessLevel, setIconDisabled, setIconEnabled } from './utils';
+import { listener } from './listener';
 
 chrome.runtime.onInstalled.addListener(() => {
     setInitAccessLevel();
@@ -39,25 +39,6 @@ const changeIconStatus = async (tabId: number): Promise<any> => {
         });
 };
 
-const changeIconStateListener = (
-    msg: ChangeIconStateMessage,
-    sender: chrome.runtime.MessageSender,
-    sendResponse: (response?: null) => void
-) => {
-    const { type, state } = msg;
-    if (type !== MESSAGE_TYPES.ChangeIconStateMessage) {
-        return;
-    }
-
-    if (state) {
-        setIconEnabled();
-    } else {
-        setIconDisabled();
-    }
-
-    sendResponse();
-};
-
-chrome.runtime.onMessage.addListener(changeIconStateListener);
+chrome.runtime.onMessage.addListener(listener);
 
 export {};
