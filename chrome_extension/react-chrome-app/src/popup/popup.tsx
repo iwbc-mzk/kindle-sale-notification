@@ -17,6 +17,7 @@ import {
 } from '../types';
 import { MESSAGE_TYPES, ID_STORAGE_KEY } from '../const';
 import { sleep, sendMessageToActiveTab } from '../utils';
+import ListButton from './list_button';
 
 const RegisterButton = styled(Button)({
     boxShadow: 'none',
@@ -135,19 +136,10 @@ const Popup = () => {
         return id != null && id !== '';
     };
 
-    const onClickRegistered = () => {
-        window.open(chrome.runtime.getURL('list.html'));
-    };
-
     return (
         <div style={{ width: '300px' }}>
-            <div style={{ textAlign: 'right' }}>
-                <span
-                    style={{ color: '#1d3994', cursor: 'pointer' }}
-                    onClick={onClickRegistered}
-                >
-                    登録済一覧
-                </span>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                <ListButton />
             </div>
             <div>
                 <TextField
