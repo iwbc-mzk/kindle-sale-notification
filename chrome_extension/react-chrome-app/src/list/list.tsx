@@ -41,7 +41,7 @@ const List = () => {
         });
     };
 
-    const colums: GridColDef[] = [
+    const columns: GridColDef[] = [
         { field: 'id', headerName: 'ID', headerAlign: 'center', width: 150 },
         {
             field: 'title',
@@ -80,11 +80,16 @@ const List = () => {
         },
     ];
 
+    const width = (): number => {
+        return columns.reduce((prev, curr) => prev + (curr?.width ?? 0), 0);
+    };
+
     return (
-        <div style={{ width: 1200, margin: 'auto' }}>
+        // 幅に+10することで不要な横スクロールを抑制している
+        <div style={{ width: width() + 10, margin: 'auto' }}>
             <DataGrid
                 rows={registeredItems}
-                columns={colums}
+                columns={columns}
                 initialState={{
                     pagination: {
                         paginationModel: { page: 0, pageSize: 50 },
