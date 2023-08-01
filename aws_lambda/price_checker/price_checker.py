@@ -21,7 +21,7 @@ CHROME_DRIVER_PATH = "/opt/chromedriver"
 
 
 @contextmanager
-def init_chrome_webdriver(response) -> webdriver.Chrome:
+def init_chrome_webdriver() -> webdriver.Chrome:
     options = Options()
     options.binary_location = CHROMIUM_PATH
     options.add_argument("--headless")
@@ -34,7 +34,8 @@ def init_chrome_webdriver(response) -> webdriver.Chrome:
 
     service = Service(executable_path=CHROME_DRIVER_PATH)
 
-    with webdriver.Chrome(service=service, options=options) as wd:
+    try:
+        wd = webdriver.Chrome(service=service, options=options)
         wd.implicitly_wait(2)
         wd.set_page_load_timeout(10)
         wd.set_script_timeout(5)
@@ -50,14 +51,13 @@ def init_chrome_webdriver(response) -> webdriver.Chrome:
         )
         assert wd.execute_script("return navigator.webdriver") is None
 
-        try:
-            yield wd
-        except Exception as e:
-            print(e)
-            print("Failed process.")
-            raise e
-        finally:
-            return response
+        yield wd
+    except Exception as e:
+        print(e)
+        print("Failed process.")
+        raise e
+    finally:
+        wd.close()
 
 
 def is_discounted(
@@ -101,7 +101,7 @@ def lambda_handler(event, context):
 
     print("id:", id)
 
-    with init_chrome_webdriver(response) as wd:
+    with init_chrome_webdriver() as wd:
         sc = AmazonScraper(wd)
 
         values = {**item}
@@ -116,12 +116,16 @@ def lambda_handler(event, context):
             ("price", sc.get_price),
             ("point", sc.get_point),
         ]
-        for key, f in params:
-            v = f()
-            if type(v) == str and v:
-                values[key] = v
-            elif type(v) == int and v >= 0:
-                values[key] = v
+
+        try:
+            for key, f in params:
+                v = f()
+                if type(v) == str and v:
+                    values[key] = v
+                elif type(v) == int and v >= 0:
+                    values[key] = v
+        except Exception as e:
+            return response
 
     need_update = False
     updated_item = item.copy()
