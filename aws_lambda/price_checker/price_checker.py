@@ -55,6 +55,7 @@ def init_chrome_webdriver(response) -> webdriver.Chrome:
         except Exception as e:
             print(e)
             print("Failed process.")
+            raise e
         finally:
             return response
 
